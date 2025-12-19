@@ -5,14 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
+import Transactions from "@/pages/Transactions";
+import Analysis from "@/pages/Analysis";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      {/* For prototype, we just route everything to dashboard or specific pages if needed */}
-      <Route path="/transactions" component={Dashboard} />
-      <Route path="/analysis" component={Dashboard} />
+      <Route path="/transactions" component={Transactions} />
+      <Route path="/analysis" component={Analysis} />
       <Route component={NotFound} />
     </Switch>
   );
