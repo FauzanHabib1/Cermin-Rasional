@@ -27,16 +27,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
         
         <nav className="flex-1 p-4 space-y-1">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <a className={cn(
-                "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-sm transition-colors",
+            <Link key={item.href} href={item.href} asChild>
+              <button className={cn(
+                "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-sm transition-colors text-left cursor-pointer",
                 location === item.href 
                   ? "bg-accent/10 text-accent border-l-2 border-accent" 
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}>
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </a>
+                <item.icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </button>
             </Link>
           ))}
         </nav>
