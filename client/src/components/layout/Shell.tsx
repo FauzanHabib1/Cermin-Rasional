@@ -145,10 +145,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className={cn("flex-1 overflow-auto transition-all duration-200", "md:ml-64")}>
-        <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6 md:p-8">
-          {children}
+      {/* Main Content - Centered */}
+      <main className="flex-1 overflow-auto transition-all duration-200">
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-6xl space-y-6 p-4 sm:p-6 md:p-8">
+            {children}
+          </div>
         </div>
       </main>
     </div>
