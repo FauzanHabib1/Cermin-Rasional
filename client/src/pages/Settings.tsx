@@ -1,4 +1,4 @@
-// This page is deprecated - use Dashboard instead
+// This page is deprecated
 import { Navigate } from "wouter";
 
 export default function Settings() {
