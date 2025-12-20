@@ -92,18 +92,19 @@ export default function Analysis() {
 
   return (
     <Shell>
-      <div className="flex flex-col gap-4 md:gap-6">
+      <div className="space-y-6">
+        {/* Header */}
         <div>
-          <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">Analisis Mendalam</h2>
-          <p className="text-muted-foreground font-mono text-xs sm:text-sm mt-1">
+          <h2 className="text-3xl font-display font-bold tracking-tight">Analisis Mendalam</h2>
+          <p className="mt-1 text-xs font-mono text-muted-foreground sm:text-sm">
             Visualisasi tren, pola, dan deviasi perilaku finansial
           </p>
         </div>
 
         {!hasData ? (
           <Card className="border-border/50 bg-card/50">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="text-muted-foreground text-center text-sm">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <p className="text-center text-sm text-muted-foreground">
                 Tambahkan transaksi untuk melihat analisis
               </p>
             </CardContent>
@@ -111,26 +112,26 @@ export default function Analysis() {
         ) : (
           <>
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="border-border/50 bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                     Total Transaksi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xl sm:text-2xl font-bold">{transactions.length}</p>
+                  <p className="text-xl font-bold sm:text-2xl">{transactions.length}</p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                     Avg Daily Spend
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xl sm:text-2xl font-bold font-mono">
+                  <p className="font-mono text-xl font-bold sm:text-2xl">
                     Rp {Math.round(analysis.totalExpense / 30).toLocaleString('id-ID')}
                   </p>
                 </CardContent>
@@ -138,12 +139,12 @@ export default function Analysis() {
 
               <Card className="border-border/50 bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                     Konsistensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-xl sm:text-2xl font-bold", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
+                  <p className={cn("text-xl font-bold sm:text-2xl", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
                     {score.consistencyScore}/100
                   </p>
                 </CardContent>
@@ -151,12 +152,12 @@ export default function Analysis() {
 
               <Card className="border-border/50 bg-card/50">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                     Efisiensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-xl sm:text-2xl font-bold", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
+                  <p className={cn("text-xl font-bold sm:text-2xl", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
                     {score.efficiencyScore}/100
                   </p>
                 </CardContent>
@@ -164,12 +165,12 @@ export default function Analysis() {
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div className="grid gap-6 lg:grid-cols-2">
               {/* Daily Trend */}
               {dailyTrendData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                       Tren Pengeluaran Harian
                     </CardTitle>
                   </CardHeader>
@@ -195,8 +196,8 @@ export default function Analysis() {
               {/* Weekly Consistency */}
               {weeklyConsistencyData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                       Pengeluaran Mingguan
                     </CardTitle>
                   </CardHeader>
@@ -226,8 +227,8 @@ export default function Analysis() {
 
               {/* Ratio Breakdown */}
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                     Alokasi Pendapatan
                   </CardTitle>
                 </CardHeader>
@@ -260,8 +261,8 @@ export default function Analysis() {
               {/* Category Breakdown */}
               {categoryData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                       Proporsi Pengeluaran
                     </CardTitle>
                   </CardHeader>
@@ -296,21 +297,21 @@ export default function Analysis() {
             {/* Key Insights */}
             <Card className="border-border/50 bg-card/50">
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                   Wawasan Analitik
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-xs sm:text-sm text-foreground">
+              <CardContent className="space-y-3">
+                <p className="text-xs text-foreground sm:text-sm">
                   <span className="font-bold">• Status Konsistensi:</span> {score.consistencyLabel} (Skor: {score.consistencyScore}/100)
                 </p>
-                <p className="text-xs sm:text-sm text-foreground">
+                <p className="text-xs text-foreground sm:text-sm">
                   <span className="font-bold">• Efisiensi Alokasi:</span> {score.efficiencyScore}/100 - {score.efficiencyScore > 80 ? "Sangat Efisien" : score.efficiencyScore > 60 ? "Cukup Efisien" : "Perlu Perbaikan"}
                 </p>
-                <p className="text-xs sm:text-sm text-foreground">
+                <p className="text-xs text-foreground sm:text-sm">
                   <span className="font-bold">• Rasio Actual vs Target:</span> Needs {analysis.needRatio.toFixed(1)}% (T: 50%), Wants {analysis.wantRatio.toFixed(1)}% (T: 30%), Savings {analysis.savingsRatio.toFixed(1)}% (T: 20%)
                 </p>
-                <p className="text-xs sm:text-sm text-foreground">
+                <p className="text-xs text-foreground sm:text-sm">
                   <span className="font-bold">• Periode Analisis:</span> {analysis.period}
                 </p>
               </CardContent>

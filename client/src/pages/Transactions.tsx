@@ -79,35 +79,36 @@ export default function Transactions() {
 
   return (
     <Shell>
-      <div className="flex flex-col gap-4 md:gap-6">
+      <div className="space-y-6">
+        {/* Header */}
         <div>
-          <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-tight">Manajemen Transaksi</h2>
-          <p className="text-muted-foreground font-mono text-xs sm:text-sm mt-1">
+          <h2 className="text-3xl font-display font-bold tracking-tight">Manajemen Transaksi</h2>
+          <p className="mt-1 text-xs font-mono text-muted-foreground sm:text-sm">
             Input, kelola, dan pantau semua transaksi finansial Anda
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid gap-6 lg:grid-cols-3">
           {/* Form Input */}
-          <Card className="lg:col-span-1 border-border/50 bg-card/50">
+          <Card className="border-border/50 bg-card/50 lg:col-span-1">
             <CardHeader>
-              <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
-                <Plus className="w-4 h-4 inline mr-2" />
+              <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <Plus className="mr-2 inline h-4 w-4" />
                 Input Transaksi Baru
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Tipe</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Tipe</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="text-xs">
+                            <SelectTrigger className="text-xs sm:text-sm">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -126,10 +127,10 @@ export default function Transactions() {
                     name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Kategori</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Kategori</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="text-xs">
+                            <SelectTrigger className="text-xs sm:text-sm">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -149,9 +150,9 @@ export default function Transactions() {
                     name="date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Tanggal</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Tanggal</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} className="text-xs" />
+                          <Input type="date" {...field} className="text-xs sm:text-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -163,9 +164,9 @@ export default function Transactions() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Deskripsi</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Deskripsi</FormLabel>
                         <FormControl>
-                          <Input placeholder="Contoh: Makan Siang" {...field} className="text-xs" />
+                          <Input placeholder="Contoh: Makan Siang" {...field} className="text-xs sm:text-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -177,9 +178,9 @@ export default function Transactions() {
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs">Nominal (Rp)</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Nominal (Rp)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" {...field} className="text-xs" />
+                          <Input type="number" placeholder="0" {...field} className="text-xs sm:text-sm" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -187,7 +188,7 @@ export default function Transactions() {
                   />
 
                   <Button type="submit" className="w-full text-xs sm:text-sm">
-                    <Plus className="w-3 h-3 mr-2" />
+                    <Plus className="mr-2 h-4 w-4" />
                     Simpan Transaksi
                   </Button>
                 </form>
@@ -196,13 +197,13 @@ export default function Transactions() {
           </Card>
 
           {/* Transactions List */}
-          <Card className="lg:col-span-2 border-border/50 bg-card/50 flex flex-col">
+          <Card className="border-border/50 bg-card/50 flex flex-col lg:col-span-2">
             <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
                   Riwayat Transaksi ({filteredTransactions.length})
                 </CardTitle>
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex gap-2">
                   <Button 
                     size="sm" 
                     variant={filter === "all" ? "default" : "outline"}
@@ -232,7 +233,7 @@ export default function Transactions() {
             </CardHeader>
             <CardContent className="flex-1 overflow-auto p-0">
               {filteredTransactions.length === 0 ? (
-                <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+                <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
                   Belum ada transaksi
                 </div>
               ) : (
@@ -240,34 +241,34 @@ export default function Transactions() {
                   <Table>
                     <TableHeader className="bg-secondary/50">
                       <TableRow>
-                        <TableHead className="font-mono text-[11px] sm:text-xs uppercase whitespace-nowrap">Tanggal</TableHead>
-                        <TableHead className="font-mono text-[11px] sm:text-xs uppercase">Deskripsi</TableHead>
-                        <TableHead className="font-mono text-[11px] sm:text-xs uppercase">Kategori</TableHead>
-                        <TableHead className="text-right font-mono text-[11px] sm:text-xs uppercase whitespace-nowrap">Jumlah</TableHead>
+                        <TableHead className="whitespace-nowrap font-mono text-[11px] uppercase sm:text-xs">Tanggal</TableHead>
+                        <TableHead className="font-mono text-[11px] uppercase sm:text-xs">Deskripsi</TableHead>
+                        <TableHead className="font-mono text-[11px] uppercase sm:text-xs">Kategori</TableHead>
+                        <TableHead className="whitespace-nowrap text-right font-mono text-[11px] uppercase sm:text-xs">Jumlah</TableHead>
                         <TableHead className="w-8"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredTransactions.map((t) => (
-                        <TableRow key={t.id} className="hover:bg-muted/50 transition-colors">
-                          <TableCell className="font-mono text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
+                        <TableRow key={t.id} className="transition-colors hover:bg-muted/50">
+                          <TableCell className="whitespace-nowrap font-mono text-[10px] text-muted-foreground sm:text-xs">
                             {format(new Date(t.date), "dd MMM", { locale: id })}
                           </TableCell>
-                          <TableCell className="font-medium text-xs sm:text-sm truncate max-w-[100px]">
+                          <TableCell className="max-w-[120px] truncate text-xs font-medium sm:max-w-none sm:text-sm">
                             {t.description}
                           </TableCell>
                           <TableCell>
                             <span className={cn(
-                              "px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] uppercase font-bold tracking-wider border whitespace-nowrap",
-                              t.category === 'need' && "bg-blue-500/10 text-blue-500 border-blue-500/20",
-                              t.category === 'want' && "bg-amber-500/10 text-amber-500 border-amber-500/20",
-                              t.category === 'savings' && "bg-green-500/10 text-green-500 border-green-500/20",
+                              "whitespace-nowrap border rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider sm:px-2 sm:text-[10px]",
+                              t.category === 'need' && "border-blue-500/20 bg-blue-500/10 text-blue-500",
+                              t.category === 'want' && "border-amber-500/20 bg-amber-500/10 text-amber-500",
+                              t.category === 'savings' && "border-green-500/20 bg-green-500/10 text-green-500",
                             )}>
                               {t.category === 'need' ? 'Kebutuhan' : t.category === 'want' ? 'Keinginan' : 'Tabungan'}
                             </span>
                           </TableCell>
                           <TableCell className={cn(
-                            "text-right font-mono text-xs sm:text-sm whitespace-nowrap",
+                            "whitespace-nowrap text-right font-mono text-xs sm:text-sm",
                             t.type === 'income' ? "text-accent" : ""
                           )}>
                             {t.type === 'income' ? '+' : '-'} Rp {Math.round(t.amount / 1000)}k
@@ -275,9 +276,9 @@ export default function Transactions() {
                           <TableCell className="text-center">
                             <button
                               onClick={() => handleDelete(t.id, t.description)}
-                              className="text-destructive hover:text-destructive/70 transition-colors"
+                              className="transition-colors hover:text-destructive/70 text-destructive"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="h-3 w-3" />
                             </button>
                           </TableCell>
                         </TableRow>
