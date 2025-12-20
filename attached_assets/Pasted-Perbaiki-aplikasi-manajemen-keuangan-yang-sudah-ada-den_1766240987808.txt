@@ -1,0 +1,117 @@
+Perbaiki aplikasi manajemen keuangan yang sudah ada dengan memisahkan secara tegas konsep pemasukan, pengeluaran, dan tabungan, karena saat ini tabungan masih diperlakukan seolah-olah sebagai transaksi.
+
+Tujuan perbaikan adalah memastikan analisis keuangan didasarkan pada arus uang yang benar dan konsisten secara logika, sehingga hasil analisis tidak menyesatkan pengguna.
+
+1. Perubahan Konsep Dasar (WAJIB)
+
+Pastikan aplikasi hanya mengenal dua tipe transaksi:
+
+Pemasukan (uang masuk)
+
+Pengeluaran (uang keluar)
+
+Tabungan bukan tipe transaksi
+
+Tabungan harus diperlakukan sebagai hasil perhitungan dari sisa uang, bukan input manual
+
+2. Penyesuaian Input
+
+Pertahankan input:
+
+Pemasukan (tanggal, sumber, jumlah)
+
+Pengeluaran (tanggal, kategori, tipe: kebutuhan / keinginan, jumlah)
+
+Hapus atau abaikan:
+
+Input transaksi bertipe “tabungan”
+
+Pertahankan:
+
+Target tabungan bulanan sebagai parameter, bukan transaksi
+
+3. Penyesuaian Perhitungan
+
+Sesuaikan logika perhitungan menjadi:
+
+Total pemasukan bulanan
+
+Total pengeluaran bulanan
+
+Sisa uang = pemasukan − pengeluaran
+
+Realisasi tabungan = sisa uang
+
+Bandingkan realisasi tabungan dengan target tabungan
+
+Tabungan tidak boleh menambah atau mengurangi total uang secara terpisah.
+
+4. Penyesuaian Analisis
+
+Sesuaikan seluruh analisis agar:
+
+Rasio pengeluaran dihitung terhadap pemasukan
+
+Konsistensi dinilai dari:
+
+Stabilitas pengeluaran
+
+Kemampuan menyisakan uang secara berulang
+
+Jika pengeluaran konsisten tetapi menyisakan sedikit atau tidak ada tabungan, aplikasi tetap harus menampilkan dampaknya
+
+Gunakan bahasa seperti:
+
+“Pengeluaran Anda stabil, tetapi rata-rata hanya menyisakan 4% dari pemasukan sehingga target tabungan tidak tercapai.”
+
+5. Penyesuaian Sistem Peringatan
+
+Peringatan harus muncul jika:
+
+Sisa uang lebih kecil dari target tabungan
+
+Rasio pengeluaran melewati ambang kebiasaan pengguna
+
+Setiap peringatan wajib menjelaskan:
+
+Angka yang digunakan
+
+Perbandingan dengan periode sebelumnya
+
+Dampak logis ke tabungan
+
+Hindari:
+
+Bahasa motivasi
+
+Kalimat menghakimi
+
+Ajakan emosional
+
+6. Penyesuaian Tampilan Informasi
+
+Tampilkan tabungan sebagai hasil, bukan sebagai daftar transaksi
+
+Jelaskan dengan kalimat sederhana, contoh:
+
+“Dari pemasukan bulan ini, sisa uang yang terbentuk adalah Rp1.200.000.”
+
+7. Konsistensi Bahasa
+
+Gunakan Bahasa Indonesia yang netral dan mudah dipahami
+
+Fokus pada penjelasan sebab–akibat berbasis angka
+
+Aplikasi berfungsi sebagai alat evaluasi, bukan penyemangat
+
+Tujuan Akhir Perbaikan
+
+Setelah perbaikan ini:
+
+Pengguna tidak bisa “terlihat menabung” tanpa benar-benar menyisakan uang
+
+Analisis mencerminkan kondisi keuangan nyata
+
+Aplikasi menunjukkan konsekuensi logis dari perilaku keuangan
+
+Aplikasi ini harus menjadi cermin rasional, bukan pencatat transaksi semata.
