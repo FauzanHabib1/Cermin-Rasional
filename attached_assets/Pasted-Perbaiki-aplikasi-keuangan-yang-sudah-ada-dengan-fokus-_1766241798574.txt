@@ -1,0 +1,157 @@
+Perbaiki aplikasi keuangan yang sudah ada dengan fokus pada dua aspek utama yang saat ini bermasalah:
+
+inkonsistensi logika tabungan
+
+tampilan antarmuka yang belum rapi, saling tumpang tindih, dan tidak responsif di berbagai ukuran layar.
+
+Perbaikan harus memastikan analisis rasional tetap utuh, sekaligus informasi dapat dibaca dan dipahami dengan jelas di semua device.
+
+A. PERBAIKAN LOGIKA TABUNGAN (WAJIB DIPERTAHANKAN)
+
+Pastikan hanya ada dua tipe transaksi:
+
+Pemasukan
+
+Pengeluaran (kebutuhan / keinginan)
+
+Tabungan bukan transaksi dan bukan kategori
+
+Tabungan dihitung sebagai:
+
+Sisa uang = total pemasukan − total pengeluaran
+
+Seluruh analisis, skor, dan peringatan harus berbasis sisa uang ini
+
+(bagian ini tidak boleh dikompromikan demi tampilan)
+
+B. PERBAIKAN TAMPILAN (LAYOUT & KETERBACAAN)
+1. Hilangkan Elemen Tumpang Tindih
+
+Pastikan:
+
+Card tidak saling menimpa
+
+Grafik tidak keluar dari container
+
+Teks tidak terpotong atau overlap
+
+Setiap komponen harus memiliki:
+
+jarak (spacing) yang konsisten
+
+ukuran minimum agar tetap terbaca
+
+2. Penataan Ulang Dashboard (Financial Cockpit)
+
+Tata ulang card menjadi alur baca logis:
+
+Ringkasan pemasukan & pengeluaran
+
+Kebutuhan
+
+Keinginan
+
+Tabungan (sebagai hasil)
+
+Peringatan & implikasi
+
+Jangan memaksakan semua informasi tampil sekaligus di satu baris pada layar kecil
+
+3. Perbaikan Halaman Transaksi
+
+Form input dan tabel riwayat tidak boleh berdampingan di layar kecil
+
+Di mobile:
+
+Form tampil di atas
+
+Riwayat transaksi di bawah
+
+Di desktop:
+
+Form dan riwayat boleh berdampingan, dengan proporsi seimbang
+
+C. RESPONSIVE DESIGN (WAJIB)
+1. Dukungan Ukuran Layar
+
+Aplikasi harus tampil baik di:
+
+Smartphone (layar kecil)
+
+Tablet
+
+Laptop
+
+Desktop besar
+
+Tanpa:
+
+Scroll horizontal
+
+Elemen terpotong
+
+Informasi tersembunyi tanpa konteks
+
+2. Prinsip Responsif yang Harus Diterapkan
+
+Gunakan tata letak fleksibel (grid / kolom adaptif)
+
+Jumlah kolom harus menyesuaikan lebar layar:
+
+Mobile: 1 kolom
+
+Tablet: 2 kolom
+
+Desktop: 3–4 kolom
+
+Ukuran teks dan grafik harus menyesuaikan layar
+
+D. KETERBACAAN & PRIORITAS INFORMASI
+
+Informasi penting (peringatan, rasio, tabungan) harus selalu terlihat jelas
+
+Jangan menyembunyikan dampak logis di balik ikon atau hover saja
+
+Bahasa tetap:
+
+Netral
+
+Berbasis angka
+
+Mudah dipahami orang umum
+
+E. KONSISTENSI VISUAL
+
+Gunakan warna secara konsisten:
+
+Kebutuhan ≠ Keinginan ≠ Tabungan
+
+Warna peringatan hanya untuk kondisi yang memang bermasalah
+
+Jangan gunakan warna “menenangkan” untuk kondisi yang secara logika buruk
+
+F. TUJUAN AKHIR PERBAIKAN
+
+Setelah perbaikan ini:
+
+Tidak ada lagi tampilan berantakan atau saling menimpa
+
+Semua fitur dapat digunakan dengan nyaman di HP maupun desktop
+
+Informasi analisis terbaca jelas tanpa harus “menebak”
+
+Aplikasi tetap menjadi cermin rasional, bukan dashboard dekoratif
+
+Catatan Penting (jujur & teknis)
+
+Kalau UI tetap:
+
+tumpang tindih
+
+sulit dibaca di HP
+
+terlalu padat tanpa hierarki
+
+maka analisis sebaik apa pun akan gagal diterima pengguna.
+
+UI bukan hiasan — dia media penyampai logika.
