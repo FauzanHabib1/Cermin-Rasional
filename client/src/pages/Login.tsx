@@ -22,12 +22,34 @@ export default function Login() {
       return;
     }
 
-    userStorage.setUser(username);
-    toast({
-      title: "Login Berhasil",
-      description: `Selamat datang, ${username}!`,
-    });
-    setLocation("/");
+    // Check if user exists
+    if (!userStorage.userExists(username)) {
+      toast({
+        title: "Akun Tidak Ditemukan",
+        description: `"${username}" belum terdaftar. Silakan buat akun terlebih dahulu.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Login user
+    if (userStorage.loginUser(username)) {
+      toast({
+        title: "Login Berhasil",
+        description: `Selamat datang, ${username}!`,
+      });
+      setLocation("/");
+    } else {
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat login",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRegisterClick = () => {
+    setLocation("/register");
   };
 
   return (
@@ -49,7 +71,7 @@ export default function Login() {
               </label>
               <Input
                 type="text"
-                placeholder="Contoh: Habib, Fatimah, Ahmad"
+                placeholder="Masukkan nama pengguna Anda"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="mt-2"
@@ -60,9 +82,19 @@ export default function Login() {
               Masuk
             </Button>
           </form>
-          <p className="text-xs text-muted-foreground text-center mt-4">
-            Masukkan nama untuk mulai menganalisis keuangan Anda
-          </p>
+
+          <div className="mt-6 pt-6 border-t border-border space-y-3">
+            <p className="text-xs text-muted-foreground text-center">
+              Belum punya akun?
+            </p>
+            <Button
+              onClick={handleRegisterClick}
+              variant="outline"
+              className="w-full"
+            >
+              Buat Akun Baru
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

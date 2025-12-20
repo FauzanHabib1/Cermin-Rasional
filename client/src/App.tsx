@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
 import Analysis from "@/pages/Analysis";
 import Login from "@/pages/Login";
+import Register from "@/pages/Register";
 
 function ProtectedRoute({ component: Component }: { component: any }) {
   const username = userStorage.getUser();
@@ -27,9 +28,15 @@ function Router() {
     return <Dashboard />;
   }
 
+  // If user tries to access /register but already logged in, redirect to dashboard
+  if (location === "/register" && userStorage.getUser()) {
+    return <Dashboard />;
+  }
+
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/">
         {() => <ProtectedRoute component={Dashboard} />}
       </Route>
