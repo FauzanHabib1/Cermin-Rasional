@@ -3,7 +3,6 @@ import { Shell } from "@/components/layout/Shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTransactions } from "@/hooks/useTransactions";
 import { analyzeFinances, calculateConsistencyScore } from "@/lib/finance-engine";
-import { Transaction } from "@/lib/types";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWithinInterval, getWeek } from "date-fns";
 import { id } from "date-fns/locale";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -92,18 +91,18 @@ export default function Analysis() {
 
   return (
     <Shell>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div>
-          <h2 className="text-3xl font-display font-bold tracking-tight">Analisis Mendalam</h2>
-          <p className="mt-1 text-xs font-mono text-muted-foreground sm:text-sm">
+          <h2 className="text-4xl font-display font-bold tracking-tight">Analisis Mendalam</h2>
+          <p className="mt-2 text-sm font-mono text-muted-foreground">
             Visualisasi tren, pola, dan deviasi perilaku finansial
           </p>
         </div>
 
         {!hasData ? (
           <Card className="border-border/50 bg-card/50">
-            <CardContent className="flex flex-col items-center justify-center py-16">
+            <CardContent className="flex flex-col items-center justify-center py-20">
               <p className="text-center text-sm text-muted-foreground">
                 Tambahkan transaksi untuk melihat analisis
               </p>
@@ -112,65 +111,65 @@ export default function Analysis() {
         ) : (
           <>
             {/* Quick Stats */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Total Transaksi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xl font-bold sm:text-2xl">{transactions.length}</p>
+                  <p className="text-3xl font-bold">{transactions.length}</p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Avg Daily Spend
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-mono text-xl font-bold sm:text-2xl">
+                  <p className="font-mono text-3xl font-bold">
                     Rp {Math.round(analysis.totalExpense / 30).toLocaleString('id-ID')}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Konsistensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-xl font-bold sm:text-2xl", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
+                  <p className={cn("text-3xl font-bold", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
                     {score.consistencyScore}/100
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Efisiensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-xl font-bold sm:text-2xl", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
+                  <p className={cn("text-3xl font-bold", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
                     {score.efficiencyScore}/100
                   </p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Charts */}
+            {/* Charts Section */}
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Daily Trend */}
               {dailyTrendData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Tren Pengeluaran Harian
                     </CardTitle>
                   </CardHeader>
@@ -196,8 +195,8 @@ export default function Analysis() {
               {/* Weekly Consistency */}
               {weeklyConsistencyData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Pengeluaran Mingguan
                     </CardTitle>
                   </CardHeader>
@@ -227,20 +226,20 @@ export default function Analysis() {
 
               {/* Ratio Breakdown */}
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Alokasi Pendapatan
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height={250}>
+                  <ResponsiveContainer width="100%" height={280}>
                     <PieChart>
                       <Pie
                         data={ratioData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
-                        outerRadius={80}
+                        outerRadius={85}
                         paddingAngle={5}
                         dataKey="value"
                       >
@@ -261,20 +260,20 @@ export default function Analysis() {
               {/* Category Breakdown */}
               {categoryData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Proporsi Pengeluaran
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height={250}>
+                    <ResponsiveContainer width="100%" height={280}>
                       <PieChart>
                         <Pie
                           data={categoryData}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}
-                          outerRadius={80}
+                          outerRadius={85}
                           paddingAngle={5}
                           dataKey="value"
                         >
@@ -296,22 +295,22 @@ export default function Analysis() {
 
             {/* Key Insights */}
             <Card className="border-border/50 bg-card/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                   Wawasan Analitik
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-xs text-foreground sm:text-sm">
+              <CardContent className="space-y-4">
+                <p className="text-sm text-foreground">
                   <span className="font-bold">• Status Konsistensi:</span> {score.consistencyLabel} (Skor: {score.consistencyScore}/100)
                 </p>
-                <p className="text-xs text-foreground sm:text-sm">
+                <p className="text-sm text-foreground">
                   <span className="font-bold">• Efisiensi Alokasi:</span> {score.efficiencyScore}/100 - {score.efficiencyScore > 80 ? "Sangat Efisien" : score.efficiencyScore > 60 ? "Cukup Efisien" : "Perlu Perbaikan"}
                 </p>
-                <p className="text-xs text-foreground sm:text-sm">
+                <p className="text-sm text-foreground">
                   <span className="font-bold">• Rasio Actual vs Target:</span> Needs {analysis.needRatio.toFixed(1)}% (T: 50%), Wants {analysis.wantRatio.toFixed(1)}% (T: 30%), Savings {analysis.savingsRatio.toFixed(1)}% (T: 20%)
                 </p>
-                <p className="text-xs text-foreground sm:text-sm">
+                <p className="text-sm text-foreground">
                   <span className="font-bold">• Periode Analisis:</span> {analysis.period}
                 </p>
               </CardContent>

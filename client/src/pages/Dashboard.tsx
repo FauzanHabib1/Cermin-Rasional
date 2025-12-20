@@ -46,12 +46,12 @@ export default function Dashboard() {
 
   return (
     <Shell>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h2 className="text-3xl font-display font-bold tracking-tight">Financial Cockpit</h2>
-            <p className="mt-1 text-xs font-mono text-muted-foreground sm:text-sm">
+            <h2 className="text-4xl font-display font-bold tracking-tight">Financial Cockpit</h2>
+            <p className="mt-2 text-sm font-mono text-muted-foreground">
               {hasData ? `Periode: ${analysis.period}` : "Belum ada data transaksi"}
             </p>
           </div>
@@ -59,7 +59,7 @@ export default function Dashboard() {
             variant="secondary" 
             onClick={handleExportPDF}
             disabled={!hasData}
-            size="sm" 
+            size="sm"
             className="w-full sm:w-auto"
           >
             <Download className="mr-2 h-4 w-4" />
@@ -69,8 +69,8 @@ export default function Dashboard() {
 
         {!hasData ? (
           <Card className="border-border/50 bg-card/50">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <TrendingUp className="mb-4 h-12 w-12 text-muted-foreground/30" />
+            <CardContent className="flex flex-col items-center justify-center py-20">
+              <TrendingUp className="mb-4 h-14 w-14 text-muted-foreground/30" />
               <p className="text-center text-sm text-muted-foreground">
                 Mulai dengan menambahkan transaksi di menu <strong>Transaksi</strong> untuk melihat analisis
               </p>
@@ -78,8 +78,8 @@ export default function Dashboard() {
           </Card>
         ) : (
           <>
-            {/* Ratio Cards */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Ratio Cards - Main Metrics */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <RatioCard 
                 label="Kebutuhan (Needs)" 
                 value={analysis.needRatio} 
@@ -112,41 +112,41 @@ export default function Dashboard() {
             />
 
             {/* Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-3">
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Total Pemasukan
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-mono text-xl font-bold text-accent sm:text-2xl">
+                  <p className="font-mono text-2xl font-bold text-accent">
                     Rp {analysis.totalIncome.toLocaleString('id-ID')}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Total Pengeluaran
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-mono text-xl font-bold text-destructive sm:text-2xl">
+                  <p className="font-mono text-2xl font-bold text-destructive">
                     Rp {analysis.totalExpense.toLocaleString('id-ID')}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground sm:text-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Net Cashflow
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={`font-mono text-xl font-bold sm:text-2xl ${analysis.netSavings >= 0 ? 'text-accent' : 'text-destructive'}`}>
+                  <p className={`font-mono text-2xl font-bold ${analysis.netSavings >= 0 ? 'text-accent' : 'text-destructive'}`}>
                     Rp {analysis.netSavings.toLocaleString('id-ID')}
                   </p>
                 </CardContent>
