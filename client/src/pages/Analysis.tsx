@@ -91,7 +91,7 @@ export default function Analysis() {
 
   return (
     <Shell>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div>
           <h2 className="text-4xl font-display font-bold tracking-tight">Analisis Mendalam</h2>
@@ -102,88 +102,90 @@ export default function Analysis() {
 
         {!hasData ? (
           <Card className="border-border/50 bg-card/50">
-            <CardContent className="flex flex-col items-center justify-center py-20">
-              <p className="text-center text-sm text-muted-foreground">
+            <CardContent className="flex flex-col items-center justify-center py-16 md:py-20">
+              <p className="text-center text-sm text-muted-foreground max-w-sm">
                 Tambahkan transaksi untuk melihat analisis
               </p>
             </CardContent>
           </Card>
         ) : (
           <>
-            {/* Quick Stats */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Quick Stats - Responsive Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Total Transaksi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold">{transactions.length}</p>
+                  <p className="text-2xl md:text-3xl font-bold">{transactions.length}</p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
-                    Avg Daily Spend
+                    Daily Avg
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="font-mono text-3xl font-bold">
+                  <p className="font-mono text-2xl md:text-3xl font-bold">
                     Rp {Math.round(analysis.totalExpense / 30).toLocaleString('id-ID')}
                   </p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Konsistensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-3xl font-bold", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
-                    {score.consistencyScore}/100
+                  <p className={cn("text-2xl md:text-3xl font-bold", score.consistencyScore > 70 ? "text-accent" : "text-destructive")}>
+                    {score.consistencyScore}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">/100</p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Efisiensi
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className={cn("text-3xl font-bold", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
-                    {score.efficiencyScore}/100
+                  <p className={cn("text-2xl md:text-3xl font-bold", score.efficiencyScore > 70 ? "text-accent" : "text-destructive")}>
+                    {score.efficiencyScore}
                   </p>
+                  <p className="text-xs text-muted-foreground mt-1">/100</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Charts Section */}
+            {/* Charts Section - Responsive Layout */}
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Daily Trend */}
               {dailyTrendData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                    <CardTitle className="text-xs sm:text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Tren Pengeluaran Harian
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                  <CardContent className="overflow-x-auto">
+                    <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={dailyTrendData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+                        <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
                           labelStyle={{ color: 'hsl(var(--foreground))' }}
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '12px' }} />
                         <Bar dataKey="needs" fill="hsl(var(--chart-2))" name="Kebutuhan" />
                         <Bar dataKey="wants" fill="hsl(var(--chart-3))" name="Keinginan" />
                       </BarChart>
@@ -196,18 +198,18 @@ export default function Analysis() {
               {weeklyConsistencyData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                    <CardTitle className="text-xs sm:text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Pengeluaran Mingguan
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                  <CardContent className="overflow-x-auto">
+                    <ResponsiveContainer width="100%" height={280}>
                       <LineChart data={weeklyConsistencyData}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '12px' }} />
+                        <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" style={{ fontSize: '11px' }} />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
                           labelStyle={{ color: 'hsl(var(--foreground))' }}
                         />
                         <Line 
@@ -216,7 +218,7 @@ export default function Analysis() {
                           stroke="hsl(var(--accent))" 
                           name="Pengeluaran"
                           strokeWidth={2}
-                          dot={{ fill: 'hsl(var(--accent))', r: 4 }}
+                          dot={{ fill: 'hsl(var(--accent))', r: 3 }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -227,20 +229,20 @@ export default function Analysis() {
               {/* Ratio Breakdown */}
               <Card className="border-border/50 bg-card/50">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                  <CardTitle className="text-xs sm:text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                     Alokasi Pendapatan
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height={280}>
+                <CardContent className="flex items-center justify-center overflow-x-auto">
+                  <ResponsiveContainer width="100%" height={260}>
                     <PieChart>
                       <Pie
                         data={ratioData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={85}
-                        paddingAngle={5}
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={4}
                         dataKey="value"
                       >
                         {ratioData.map((entry, index) => (
@@ -249,9 +251,9 @@ export default function Analysis() {
                       </Pie>
                       <Tooltip 
                         formatter={(value: any) => `${Number(value).toFixed(1)}%`}
-                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                        contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
                       />
-                      <Legend />
+                      <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -261,20 +263,20 @@ export default function Analysis() {
               {categoryData.length > 0 && (
                 <Card className="border-border/50 bg-card/50">
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                    <CardTitle className="text-xs sm:text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
                       Proporsi Pengeluaran
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="flex items-center justify-center">
-                    <ResponsiveContainer width="100%" height={280}>
+                  <CardContent className="flex items-center justify-center overflow-x-auto">
+                    <ResponsiveContainer width="100%" height={260}>
                       <PieChart>
                         <Pie
                           data={categoryData}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={85}
-                          paddingAngle={5}
+                          innerRadius={50}
+                          outerRadius={80}
+                          paddingAngle={4}
                           dataKey="value"
                         >
                           {categoryData.map((entry, index) => (
@@ -283,9 +285,9 @@ export default function Analysis() {
                         </Pie>
                         <Tooltip 
                           formatter={(value: any) => `Rp ${Number(value).toLocaleString('id-ID')}`}
-                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', fontSize: '12px' }}
                         />
-                        <Legend />
+                        <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                       </PieChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -297,22 +299,24 @@ export default function Analysis() {
             <Card className="border-border/50 bg-card/50">
               <CardHeader className="pb-4">
                 <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
-                  Wawasan Analitik
+                  Ringkasan Analitik
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-foreground">
-                  <span className="font-bold">• Status Konsistensi:</span> {score.consistencyLabel} (Skor: {score.consistencyScore}/100)
-                </p>
-                <p className="text-sm text-foreground">
-                  <span className="font-bold">• Efisiensi Alokasi:</span> {score.efficiencyScore}/100 - {score.efficiencyScore > 80 ? "Sangat Efisien" : score.efficiencyScore > 60 ? "Cukup Efisien" : "Perlu Perbaikan"}
-                </p>
-                <p className="text-sm text-foreground">
-                  <span className="font-bold">• Rasio Actual vs Target:</span> Needs {analysis.needRatio.toFixed(1)}% (T: 50%), Wants {analysis.wantRatio.toFixed(1)}% (T: 30%), Savings {analysis.savingsRatio.toFixed(1)}% (T: 20%)
-                </p>
-                <p className="text-sm text-foreground">
-                  <span className="font-bold">• Periode Analisis:</span> {analysis.period}
-                </p>
+              <CardContent className="space-y-3">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-xs sm:text-sm text-foreground"><span className="font-bold">Konsistensi:</span> {score.consistencyLabel}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Skor: {score.consistencyScore}/100</p>
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm text-foreground"><span className="font-bold">Efisiensi:</span> {score.efficiencyScore > 80 ? "Sangat Efisien" : score.efficiencyScore > 60 ? "Cukup Efisien" : "Perlu Perbaikan"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Skor: {score.efficiencyScore}/100</p>
+                  </div>
+                </div>
+                <div className="border-t border-border pt-3">
+                  <p className="text-xs sm:text-sm text-foreground"><span className="font-bold">Rasio Actual vs Target:</span></p>
+                  <p className="text-xs text-muted-foreground mt-1">Kebutuhan {analysis.needRatio.toFixed(1)}% (Target 50%) | Keinginan {analysis.wantRatio.toFixed(1)}% (Target 30%) | Tabungan {analysis.savingsRatio.toFixed(1)}% (Target 20%)</p>
+                </div>
               </CardContent>
             </Card>
           </>

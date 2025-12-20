@@ -1,5 +1,5 @@
 export type TransactionType = 'income' | 'expense';
-export type Category = 'need' | 'want' | 'savings'; // Simplified for "Rational" approach
+export type Category = 'need' | 'want';
 
 export interface Transaction {
   id: string;
