@@ -8,15 +8,19 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Register() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) {
+
+    // Validation
+    if (!username.trim() || !password.trim()) {
       toast({
         title: "Error",
-        description: "Masukkan nama pengguna",
+        description: "Masukkan username dan password",
         variant: "destructive",
       });
       return;
@@ -25,14 +29,32 @@ export default function Register() {
     if (username.length < 3) {
       toast({
         title: "Error",
-        description: "Nama pengguna minimal 3 karakter",
+        description: "Username minimal 3 karakter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password minimal 6 karakter",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Password dan konfirmasi tidak cocok",
         variant: "destructive",
       });
       return;
     }
 
     // Register user
-    if (userStorage.registerUser(username)) {
+    if (userStorage.registerUser(username, password)) {
       // Auto login after register
       userStorage.setUser(username);
       toast({
@@ -43,7 +65,7 @@ export default function Register() {
     } else {
       toast({
         title: "Error",
-        description: `"${username}" sudah terdaftar. Gunakan nama pengguna lain.`,
+        description: `"${username}" sudah terdaftar. Gunakan username lain.`,
         variant: "destructive",
       });
     }
@@ -68,7 +90,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">
-                Nama Pengguna
+                Username
               </label>
               <Input
                 type="text"
@@ -78,10 +100,34 @@ export default function Register() {
                 className="mt-2"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Gunakan nama yang mudah diingat
-              </p>
             </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Password
+              </label>
+              <Input
+                type="password"
+                placeholder="Minimal 6 karakter"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Konfirmasi Password
+              </label>
+              <Input
+                type="password"
+                placeholder="Ulangi password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+
             <Button type="submit" className="w-full">
               Daftar Akun
             </Button>

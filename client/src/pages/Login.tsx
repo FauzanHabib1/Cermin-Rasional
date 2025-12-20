@@ -8,21 +8,23 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username.trim()) {
+
+    if (!username.trim() || !password.trim()) {
       toast({
         title: "Error",
-        description: "Masukkan nama pengguna",
+        description: "Masukkan username dan password",
         variant: "destructive",
       });
       return;
     }
 
-    // Check if user exists
+    // Check if user exists and password is correct
     if (!userStorage.userExists(username)) {
       toast({
         title: "Akun Tidak Ditemukan",
@@ -32,8 +34,18 @@ export default function Login() {
       return;
     }
 
+    // Verify password
+    if (!userStorage.verifyPassword(username, password)) {
+      toast({
+        title: "Password Salah",
+        description: "Username atau password yang Anda masukkan salah.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Login user
-    if (userStorage.loginUser(username)) {
+    if (userStorage.loginUser(username, password)) {
       toast({
         title: "Login Berhasil",
         description: `Selamat datang, ${username}!`,
@@ -67,17 +79,31 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground">
-                Nama Pengguna
+                Username
               </label>
               <Input
                 type="text"
-                placeholder="Masukkan nama pengguna Anda"
+                placeholder="Masukkan username Anda"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="mt-2"
                 autoFocus
               />
             </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Password
+              </label>
+              <Input
+                type="password"
+                placeholder="Masukkan password Anda"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2"
+              />
+            </div>
+
             <Button type="submit" className="w-full">
               Masuk
             </Button>

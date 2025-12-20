@@ -125,21 +125,22 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
 
           {username && (
-            <div className={cn("text-sm text-muted-foreground p-2 border border-border rounded-sm", (collapsed && !hoverExpanded) && "hidden")}>
-              User: <span className="font-semibold">{username}</span>
+            <div className={cn("text-sm text-muted-foreground p-2 border border-border rounded-sm truncate", (collapsed && !hoverExpanded) && "hidden")}>
+              <span className="font-semibold">{username}</span>
             </div>
           )}
 
           <button
             onClick={handleLogout}
             className={cn(
-              "w-full flex items-center justify-center gap-2 px-3 py-2 rounded-sm border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors text-sm",
-              (collapsed && !hoverExpanded) && "justify-center"
+              "w-full flex items-center gap-2 px-3 py-2 rounded-sm border border-destructive/30 text-destructive hover:bg-destructive/10 transition-colors text-sm",
+              (collapsed && !hoverExpanded) ? "justify-center" : "justify-start"
             )}
             title="Logout"
+            data-testid="button-logout"
           >
-            <LogOut className="w-4 h-4" />
-            <span className={cn((collapsed && !hoverExpanded) ? "hidden" : "")}>Logout</span>
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className={cn((collapsed && !hoverExpanded) ? "hidden" : "truncate")}>Logout</span>
           </button>
         </div>
       </aside>
