@@ -1,5 +1,6 @@
 export interface RegisteredUser {
   username: string;
+  password: string;
   registeredAt: string;
 }
 
@@ -20,7 +21,7 @@ export const userStorage = {
     } catch {}
   },
 
-  // Logout current user
+  // Logout current user (preserves all data)
   clearUser: (): void => {
     try {
       localStorage.removeItem("ratio_current_user");
@@ -38,7 +39,7 @@ export const userStorage = {
   },
 
   // Register new user
-  registerUser: (username: string): boolean => {
+  registerUser: (username: string, password: string): boolean => {
     try {
       const users = userStorage.getRegisteredUsers();
       if (users.some(u => u.username === username)) {
@@ -46,6 +47,7 @@ export const userStorage = {
       }
       users.push({
         username,
+        password,
         registeredAt: new Date().toISOString(),
       });
       localStorage.setItem("ratio_registered_users", JSON.stringify(users));
@@ -61,9 +63,21 @@ export const userStorage = {
     return users.some(u => u.username === username);
   },
 
-  // Login user (verify exists)
-  loginUser: (username: string): boolean => {
-    if (userStorage.userExists(username)) {
+  // Get user by username
+  getUserByUsername: (username: string): RegisteredUser | null => {
+    const users = userStorage.getRegisteredUsers();
+    return users.find(u => u.username === username) || null;
+  },
+
+  // Verify password
+  verifyPassword: (username: string, password: string): boolean => {
+    const user = userStorage.getUserByUsername(username);
+    return user !== null && user.password === password;
+  },
+
+  // Login user (verify exists and password matches)
+  loginUser: (username: string, password: string): boolean => {
+    if (userStorage.verifyPassword(username, password)) {
       userStorage.setUser(username);
       return true;
     }
