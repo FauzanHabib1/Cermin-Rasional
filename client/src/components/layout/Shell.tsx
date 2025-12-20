@@ -5,11 +5,7 @@ import {
   Wallet,
   PieChart,
   AlertTriangle,
-  ChevronLeft,
-  ChevronRight,
-  Settings,
 } from "lucide-react";
-import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -32,7 +28,6 @@ export function Shell({ children }: { children: React.ReactNode }) {
     { icon: LayoutDashboard, label: "Dashboard", href: "/" },
     { icon: Wallet, label: "Transaksi", href: "/transactions" },
     { icon: PieChart, label: "Analisis", href: "/analysis" },
-    { icon: Settings, label: "Pengaturan", href: "/settings" },
   ];
 
   useEffect(() => {
@@ -55,16 +50,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
         )}
       >
         <div className="p-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-display font-bold tracking-tighter flex items-center gap-2">
-                RATIO<span className="text-accent text-xs align-top">.beta</span>
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <AuthArea collapsed={collapsed} setCollapsed={setCollapsed} />
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-2xl font-display font-bold tracking-tighter flex items-center gap-2">
+              RATIO<span className="text-accent text-xs align-top">.beta</span>
+            </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-1 font-mono">
             Rational Finance Engine
@@ -106,55 +95,19 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 Logika Aktif
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground leading-tight">
-              Sistem akan memberikan peringatan rasional tanpa empati buatan.
+            <p className={cn("text-[10px] text-muted-foreground leading-tight", collapsed && "hidden")}>
+              Sistem memberikan analisis rasional tanpa motivasi emosional.
             </p>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main
-        className={cn(
-          "flex-1 overflow-auto transition-all duration-200",
-          isMobile ? "ml-0" : collapsed ? "md:ml-16" : "md:ml-64"
-        )}
-      >
-        <div className="container mx-auto max-w-7xl p-6 md:p-8 space-y-8">
+      <main className={cn("flex-1 overflow-auto", "md:ml-64")}>
+        <div className="container mx-auto max-w-7xl p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
           {children}
         </div>
       </main>
     </div>
-  );
-}
-
-function AuthArea({ collapsed, setCollapsed }: { collapsed: boolean; setCollapsed: (s: boolean) => void }) {
-  const { user, logout } = useAuth();
-
-  return (
-    <>
-      <button
-        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        onClick={() => {
-          setCollapsed((s) => {
-            const next = !s;
-            try { localStorage.setItem("ratio_sidebar_collapsed", next ? "true" : "false"); } catch {}
-            return next;
-          });
-        }}
-        className="p-1 rounded-sm hover:bg-accent/5 text-muted-foreground"
-      >
-        {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-      </button>
-
-      {user ? (
-        <div className="flex items-center gap-2">
-          <div className={cn("text-sm text-muted-foreground", collapsed && "hidden")}>{user.username}</div>
-          <button onClick={logout} className="px-2 py-1 text-xs rounded-sm border">
-            Logout
-          </button>
-        </div>
-      ) : null}
-    </>
   );
 }
