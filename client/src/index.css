@@ -8,8 +8,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
 
-  /* Rational Theme - High Contrast, Dark Mode Default, Serious */
+  /* Premium Modern Theme */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));
@@ -31,11 +32,11 @@
   --color-ring: hsl(var(--ring));
 
   /* Chart Colors - Semantic */
-  --color-chart-1: hsl(var(--chart-1)); /* Income/Savings */
-  --color-chart-2: hsl(var(--chart-2)); /* Needs */
-  --color-chart-3: hsl(var(--chart-3)); /* Wants */
-  --color-chart-4: hsl(var(--chart-4)); /* Warning */
-  --color-chart-5: hsl(var(--chart-5)); /* Alert */
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
 
   --color-sidebar: hsl(var(--sidebar));
   --color-sidebar-foreground: hsl(var(--sidebar-foreground));
@@ -45,72 +46,129 @@
   --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
-  
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --font-display: 'Space Grotesk', sans-serif;
-  
-  --radius: 0rem; /* Brutalist - No rounded corners */
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+
+  --radius: 0.75rem; /* Modern rounded corners */
 }
 
-/* Rational Dark Theme Base */
+/* Premium Dark Theme with Glassmorphism */
 :root {
-  --background: 240 5% 6%; /* Almost black */
-  --foreground: 0 0% 90%; /* Off-white */
-  
-  --card: 240 5% 10%; /* Dark Grey */
-  --card-foreground: 0 0% 90%;
-  
-  --popover: 240 5% 8%;
-  --popover-foreground: 0 0% 90%;
-  
-  --primary: 0 0% 90%; /* White Text */
-  --primary-foreground: 240 5% 6%; /* Black Text on White */
-  
-  --secondary: 240 5% 15%; /* Lighter Grey */
-  --secondary-foreground: 0 0% 90%;
-  
-  --muted: 240 5% 15%;
-  --muted-foreground: 240 5% 60%;
-  
-  --accent: 142 70% 50%; /* Clinical Green */
-  --accent-foreground: 0 0% 10%;
-  
-  --destructive: 0 84% 60%; /* Warning Red */
-  --destructive-foreground: 0 0% 98%;
+  --background: 222 47% 11%; /* Deep slate */
+  --foreground: 210 40% 98%; /* Crisp white */
 
-  --border: 240 5% 20%;
-  --input: 240 5% 20%;
-  --ring: 240 5% 30%;
+  --card: 222 47% 11% / 0.6; /* Glass effect */
+  --card-foreground: 210 40% 98%;
+
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
+
+  --primary: 263 70% 50%; /* Deep indigo */
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 217 33% 17%; /* Muted slate */
+  --secondary-foreground: 210 40% 98%;
+
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+
+  --accent: 173 80% 40%; /* Vibrant teal */
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 72% 51%; /* Rose red */
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 263 70% 50%;
 
   /* Semantic Chart Colors */
-  --chart-1: 142 70% 45%; /* Green (Income/Savings) */
+  --chart-1: 173 80% 40%; /* Teal (Income/Savings) */
   --chart-2: 217 91% 60%; /* Blue (Needs) */
-  --chart-3: 35 90% 55%; /* Amber (Wants) */
-  --chart-4: 0 84% 60%; /* Red (Danger) */
+  --chart-3: 38 92% 50%; /* Amber (Wants) */
+  --chart-4: 0 72% 51%; /* Rose (Danger) */
   --chart-5: 280 60% 60%; /* Purple (Other) */
 
-  --sidebar: 240 5% 8%;
-  --sidebar-foreground: 0 0% 90%;
-  --sidebar-primary: 0 0% 90%;
-  --sidebar-primary-foreground: 240 5% 6%;
-  --sidebar-accent: 240 5% 15%;
-  --sidebar-accent-foreground: 0 0% 90%;
-  --sidebar-border: 240 5% 20%;
-  --sidebar-ring: 240 5% 30%;
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 263 70% 50%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 217 33% 17%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-border: 217 33% 17%;
+  --sidebar-ring: 263 70% 50%;
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-image: radial-gradient(
+        at 0% 0%,
+        hsl(263 70% 20% / 0.3) 0px,
+        transparent 50%
+      ),
+      radial-gradient(at 100% 100%, hsl(173 80% 20% / 0.2) 0px, transparent 50%);
+    background-attachment: fixed;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display tracking-tight;
   }
+
   .font-mono-nums {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* Glassmorphism utilities */
+  .glass {
+    background: hsl(var(--card));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .glass-strong {
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.8);
+  }
+
+  /* Gradient utilities */
+  .gradient-primary {
+    background: linear-gradient(
+      135deg,
+      hsl(263 70% 50%) 0%,
+      hsl(280 60% 60%) 100%
+    );
+  }
+
+  .gradient-accent {
+    background: linear-gradient(
+      135deg,
+      hsl(173 80% 40%) 0%,
+      hsl(142 70% 45%) 100%
+    );
+  }
+
+  /* Shadow utilities */
+  .shadow-glow {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
+  }
+
+  .shadow-glow-accent {
+    box-shadow: 0 0 20px hsl(var(--accent) / 0.3);
   }
 }

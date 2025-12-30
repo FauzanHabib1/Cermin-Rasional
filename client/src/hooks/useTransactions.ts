@@ -23,10 +23,16 @@ export function useTransactions() {
   }, []);
 
   const updateTransaction = useCallback((id: string, updated: Partial<Transaction>) => {
-    storage.updateTransaction(id, updated);
-    setTransactions(prev => 
-      prev.map(t => t.id === id ? { ...t, ...updated } : t)
-    );
+    try {
+      storage.updateTransaction(id, updated);
+      setTransactions(prev => 
+        prev.map(t => t.id === id ? { ...t, ...updated } : t)
+      );
+      return { success: true } as const;
+    } catch (e: any) {
+      console.error(e);
+      return { success: false, message: e?.message || String(e) } as const;
+    }
   }, []);
 
   const clearAll = useCallback(() => {
