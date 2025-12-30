@@ -1,14 +1,41 @@
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Shell } from "@/components/layout/Shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useTransactions } from "@/hooks/useTransactions";
 import { Transaction } from "@/lib/types";
 import { format } from "date-fns";
@@ -16,19 +43,41 @@ import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import UI_COPY from "@/lib/ui-copy";
+import { useEffect } from "react";
+import { RupiahInput } from "@/components/ui/rupiah-input";
 
 const formSchema = z.object({
   description: z.string().min(2, "Deskripsi terlalu pendek"),
-  amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Jumlah harus angka positif"),
+  amount: z
+    .string()
+    .refine(
+      (val) => !isNaN(Number(val)) && Number(val) > 0,
+      "Jumlah harus angka positif"
+    ),
   type: z.enum(["income", "expense"]),
-  category: z.enum(["need", "want"]),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), "Tanggal tidak valid"),
+  category: z.enum(["need", "want"]).optional(), // Only for expenses
+  date: z
+    .string()
+    .refine((val) => !isNaN(Date.parse(val)), "Tanggal tidak valid"),
+  savingsAllocation: z
+    .string()
+    .optional()
+    .refine(
+      (val) =>
+        val === undefined ||
+        val === "" ||
+        (!isNaN(Number(val)) && Number(val) >= 0),
+      "Alokasi harus berupa angka >= 0"
+    ),
 });
 
 export default function Transactions() {
-  const { transactions, addTransaction, deleteTransaction } = useTransactions();
+  const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
   const { toast } = useToast();
-  const [filter, setFilter] = useState<"all" | "income" | "expense">("all");
+  const [filter, setFilter] = useState<
+    "all" | "income" | "expense" | "savings"
+  >("all");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -37,44 +86,113 @@ export default function Transactions() {
       amount: "",
       type: "expense",
       category: "need",
-      date: new Date().toISOString().split('T')[0],
+      savingsAllocation: "",
+      date: new Date().toISOString().split("T")[0],
     },
   });
+  const watchedType = form.watch("type");
+
+  // Edit modal state
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+
+  const editSchema = z.object({
+    amount: z
+      .string()
+      .refine((val) => !isNaN(Number(val)) && Number(val) > 0, "Jumlah harus angka positif"),
+    description: z.string().min(1, "Deskripsi diperlukan"),
+  });
+
+  const editForm = useForm<z.infer<typeof editSchema>>({
+    resolver: zodResolver(editSchema),
+    defaultValues: { amount: "", description: "" },
+  });
+
+  useEffect(() => {
+    if (editingTx) {
+      editForm.reset({ amount: String(editingTx.amount), description: editingTx.description });
+    }
+  }, [editingTx]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const allocation = values.savingsAllocation
+      ? Number(values.savingsAllocation)
+      : 0;
+    const incomeAmount = Number(values.amount);
+    if (values.type === 'income' && allocation > incomeAmount) {
+      toast({
+        title: 'Alokasi melebihi pemasukan',
+        description: `Anda mencoba mengamankan Rp ${allocation.toLocaleString('id-ID')} dari pemasukan Rp ${incomeAmount.toLocaleString('id-ID')}. Kurangi alokasi.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const newTransaction: Transaction = {
       id: Math.random().toString(36).substr(2, 9),
       date: new Date(values.date).toISOString(),
       amount: Number(values.amount),
       type: values.type as "income" | "expense",
-      category: values.category as "need" | "want",
+      category: values.category as "need" | "want" | "savings",
       description: values.description,
     };
-    
     addTransaction(newTransaction);
+    if (newTransaction.type === "income" && allocation > 0) {
+      const allocationTx: Transaction = {
+        id: Math.random().toString(36).substr(2, 9),
+        date: new Date(values.date).toISOString(),
+        amount: allocation,
+        type: "income", // Keep as income type
+        category: "need", // Dummy category, not used for allocations
+        description: `Uang Diamankan: ${values.description}`,
+        parentIncomeId: newTransaction.id as any,
+        isAllocation: true,
+      };
+      addTransaction(allocationTx);
+    }
     toast({
       title: "Transaksi Tercatat",
-      description: `${values.description} - Rp ${Number(values.amount).toLocaleString('id-ID')}`,
+      description: `${values.description} - Rp ${Number(
+        values.amount
+      ).toLocaleString("id-ID")}`,
     });
     form.reset({
       description: "",
       amount: "",
       type: "expense",
       category: "need",
-      date: new Date().toISOString().split('T')[0],
+      savingsAllocation: "",
+      date: new Date().toISOString().split("T")[0],
     });
   }
 
-  const filteredTransactions = transactions.filter(t => 
-    filter === "all" ? true : t.type === filter
-  );
+  const filteredTransactions = transactions.filter((t) => {
+    if (filter === "all") return true;
+    if (filter === "savings") return t.isAllocation === true;
+    return t.type === filter;
+  });
 
   const handleDelete = (id: string, desc: string) => {
-    deleteTransaction(id);
-    toast({
-      title: "Transaksi Dihapus",
-      description: desc,
-    });
+    // If deleting an income with allocations, warn first
+    const tx = transactions.find((t) => t.id === id);
+    if (tx && tx.type === "income") {
+      const allocations = transactions.filter((a) => a.parentIncomeId?.toString() === id);
+      const sumAlloc = allocations.reduce((s, a) => s + a.amount, 0);
+      if (allocations.length > 0) {
+        const confirmMsg = `Peringatan: Menghapus pemasukan ini juga akan menghapus alokasi tabungan sebesar Rp ${sumAlloc.toLocaleString('id-ID')}. Lanjutkan?`;
+        if (!confirm(confirmMsg)) return;
+      }
+    }
+
+    try {
+      deleteTransaction(id);
+      toast({
+        title: "Transaksi Dihapus",
+        description: desc,
+      });
+    } catch (e) {
+      toast({ title: "Gagal menghapus", description: String(e), variant: "destructive" });
+    }
   };
 
   return (
@@ -82,7 +200,9 @@ export default function Transactions() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h2 className="text-4xl font-display font-bold tracking-tight">Manajemen Transaksi</h2>
+          <h2 className="text-4xl font-display font-bold tracking-tight">
+            Manajemen Transaksi
+          </h2>
           <p className="mt-2 text-sm font-mono text-muted-foreground">
             Input, kelola, dan pantau semua transaksi finansial Anda
           </p>
@@ -100,14 +220,22 @@ export default function Transactions() {
             </CardHeader>
             <CardContent>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={form.control}
                     name="type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">Tipe</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormLabel className="text-xs font-medium">
+                          Tipe
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger className="text-sm">
                               <SelectValue />
@@ -122,35 +250,44 @@ export default function Transactions() {
                       </FormItem>
                     )}
                   />
-                  
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-xs font-medium">Kategori</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="need">Kebutuhan</SelectItem>
-                            <SelectItem value="want">Keinginan</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+                  {watchedType === "expense" && (
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium">
+                            Kategori
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="need">Kebutuhan</SelectItem>
+                              <SelectItem value="want">Keinginan</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <FormField
                     control={form.control}
                     name="date"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">Tanggal</FormLabel>
+                        <FormLabel className="text-xs font-medium">
+                          Tanggal
+                        </FormLabel>
                         <FormControl>
                           <Input type="date" {...field} className="text-sm" />
                         </FormControl>
@@ -164,9 +301,15 @@ export default function Transactions() {
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">Deskripsi</FormLabel>
+                        <FormLabel className="text-xs font-medium">
+                          Deskripsi
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Contoh: Makan Siang" {...field} className="text-sm" />
+                          <Input
+                            placeholder="Contoh: Makan Siang"
+                            {...field}
+                            className="text-sm"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -178,14 +321,47 @@ export default function Transactions() {
                     name="amount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-medium">Nominal (Rp)</FormLabel>
+                        <FormLabel className="text-xs font-medium">
+                          Nominal
+                        </FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="0" {...field} className="text-sm" />
+                          <RupiahInput
+                            value={field.value}
+                            onChange={(value) => field.onChange(String(value))}
+                            placeholder="0"
+                            className="text-sm"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  {watchedType === "income" && (
+                    <FormField
+                      control={form.control}
+                      name="savingsAllocation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-medium">
+                            Amankan untuk Tabungan (opsional)
+                          </FormLabel>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            Uang yang diamankan akan dipisahkan dan tidak bisa dipakai untuk belanja.
+                          </p>
+                        <FormControl>
+                          <RupiahInput
+                            value={field.value || ''}
+                            onChange={(value) => field.onChange(String(value))}
+                            placeholder="0"
+                            className="text-sm"
+                          />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
                   <Button type="submit" className="w-full mt-2">
                     <Plus className="mr-2 h-4 w-4" />
@@ -204,24 +380,24 @@ export default function Transactions() {
                   Riwayat ({filteredTransactions.length})
                 </CardTitle>
                 <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant={filter === "all" ? "default" : "outline"}
                     onClick={() => setFilter("all")}
                     className="text-xs"
                   >
                     Semua
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant={filter === "income" ? "default" : "outline"}
                     onClick={() => setFilter("income")}
                     className="text-xs"
                   >
                     Masuk
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant={filter === "expense" ? "default" : "outline"}
                     onClick={() => setFilter("expense")}
                     className="text-xs"
@@ -240,16 +416,27 @@ export default function Transactions() {
                 <Table className="text-xs sm:text-sm">
                   <TableHeader className="bg-secondary/50 sticky top-0">
                     <TableRow>
-                      <TableHead className="whitespace-nowrap font-mono text-[10px] sm:text-xs uppercase">Tanggal</TableHead>
-                      <TableHead className="font-mono text-[10px] sm:text-xs uppercase">Deskripsi</TableHead>
-                      <TableHead className="font-mono text-[10px] sm:text-xs uppercase">Kategori</TableHead>
-                      <TableHead className="whitespace-nowrap text-right font-mono text-[10px] sm:text-xs uppercase">Jumlah</TableHead>
+                      <TableHead className="whitespace-nowrap font-mono text-[10px] sm:text-xs uppercase">
+                        Tanggal
+                      </TableHead>
+                      <TableHead className="font-mono text-[10px] sm:text-xs uppercase">
+                        Deskripsi
+                      </TableHead>
+                      <TableHead className="font-mono text-[10px] sm:text-xs uppercase">
+                        Kategori
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap text-right font-mono text-[10px] sm:text-xs uppercase">
+                        Jumlah
+                      </TableHead>
                       <TableHead className="w-8"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredTransactions.map((t) => (
-                      <TableRow key={t.id} className="hover:bg-muted/50 transition-colors">
+                      <TableRow
+                        key={t.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
                         <TableCell className="whitespace-nowrap font-mono text-[10px] sm:text-xs text-muted-foreground">
                           {format(new Date(t.date), "dd MMM", { locale: id })}
                         </TableCell>
@@ -257,29 +444,56 @@ export default function Transactions() {
                           {t.description}
                         </TableCell>
                         <TableCell>
-                          <span className={cn(
-                            "whitespace-nowrap border rounded px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider",
-                            t.category === 'need' && "border-blue-500/30 bg-blue-500/10 text-blue-500",
-                            t.category === 'want' && "border-amber-500/30 bg-amber-500/10 text-amber-500",
-                          )}>
-                            {t.category === 'need' ? 'Kebutuhan' : 'Keinginan'}
+                          <span
+                            className={cn(
+                              "whitespace-nowrap border rounded px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider",
+                              t.category === "need" &&
+                                "border-blue-500/30 bg-blue-500/10 text-blue-500",
+                              t.category === "want" &&
+                                "border-amber-500/30 bg-amber-500/10 text-amber-500",
+                              t.category === "savings" &&
+                                "border-green-500/30 bg-green-500/10 text-green-500"
+                            )}
+                          >
+                            {t.isAllocation
+                              ? "Diamankan"
+                              : t.category === "need"
+                              ? "Kebutuhan"
+                              : "Keinginan"}
                           </span>
                         </TableCell>
-                        <TableCell className={cn(
-                          "whitespace-nowrap text-right font-mono text-xs sm:text-sm",
-                          t.type === 'income' ? "text-accent font-medium" : ""
-                        )}>
-                          <span className="hidden sm:inline">{t.type === 'income' ? '+' : '-'} Rp</span>
+                        <TableCell
+                          className={cn(
+                            "whitespace-nowrap text-right font-mono text-xs sm:text-sm",
+                            t.type === "income" ? "text-accent font-medium" : ""
+                          )}
+                        >
+                          <span className="hidden sm:inline">
+                            {t.type === "income" ? "+" : "-"} Rp
+                          </span>
                           {Math.round(t.amount / 1000)}k
                         </TableCell>
                         <TableCell className="text-center">
-                          <button
-                            onClick={() => handleDelete(t.id, t.description)}
-                            className="text-destructive hover:text-destructive/70 transition-colors"
-                            title="Hapus"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => {
+                                setEditingTx(t);
+                                setEditOpen(true);
+                              }}
+                              className="text-foreground hover:text-foreground/80 transition-colors"
+                              title="Edit"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => handleDelete(t.id, t.description)}
+                              className="text-destructive hover:text-destructive/70 transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            </button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -289,6 +503,63 @@ export default function Transactions() {
             </CardContent>
           </Card>
         </div>
+          {/* Edit Transaction Modal */}
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Edit Transaksi</DialogTitle>
+              </DialogHeader>
+              <Form {...editForm}>
+                <form
+                  onSubmit={editForm.handleSubmit((values) => {
+                    if (!editingTx) return;
+                    const result = updateTransaction(editingTx.id, { amount: Number(values.amount), description: values.description });
+                    if (!(result as any)?.success) {
+                      const msg = (result as any)?.message || 'Perubahan tidak diperbolehkan.';
+                      toast({ title: 'Gagal mengubah', description: msg, variant: 'destructive' });
+                    } else {
+                      toast({ title: 'Transaksi Diperbarui', description: 'Perubahan berhasil disimpan.' });
+                      setEditOpen(false);
+                      setEditingTx(null);
+                    }
+                  })}
+                  className="space-y-4"
+                >
+                  <FormField
+                    control={editForm.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium">Nominal (Rp)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={editForm.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs font-medium">Deskripsi</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <DialogFooter>
+                    <Button type="submit">Simpan Perubahan</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
       </div>
     </Shell>
   );
