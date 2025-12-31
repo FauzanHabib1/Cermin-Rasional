@@ -1,6 +1,7 @@
 import { Shell } from "@/components/layout/Shell";
 import { RatioCard } from "@/components/dashboard/RatioCard";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
+import { AIAnalysis } from "@/components/dashboard/AIAnalysis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   analyzeFinances,
@@ -266,6 +267,9 @@ export default function Dashboard() {
                 warnings={score.warnings}
               />
             </div>
+
+            {/* AI Analysis */}
+            <AIAnalysis analysis={analysis} />
 
             {/* Warnings & Insights */}
             {score.warnings.length > 0 && (
