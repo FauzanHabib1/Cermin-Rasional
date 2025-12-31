@@ -10,7 +10,7 @@ import { generatePlainReport } from "@/lib/finance-engine";
 import { generateAuditReport } from "@/lib/pdf-generator";
 import { useTransactions } from "@/hooks/useTransactions";
 import { Button } from "@/components/ui/button";
-import { Download, TrendingUp } from "lucide-react";
+import { Download, TrendingUp, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMemo } from "react";
 
@@ -51,7 +51,6 @@ export default function Dashboard() {
 
   const handleShowPlainReport = () => {
     const report = generatePlainReport(transactions);
-    // show in a new window so user can copy, simple approach
     const w = window.open("", "_blank", "noopener");
     if (w) {
       w.document.write(
@@ -61,7 +60,6 @@ export default function Dashboard() {
       );
       w.document.title = "Laporan Keuangan Sederhana";
     } else {
-      // fallback: copy to clipboard
       navigator.clipboard?.writeText(report);
       alert(
         "Laporan disalin ke clipboard. Buka halaman Transaksi untuk meninjau jika perlu."
@@ -70,6 +68,7 @@ export default function Dashboard() {
   };
 
   const hasData = transactions.length > 0;
+  const availableBalance = analysis.totalIncome - (analysis.savedAmount ?? 0);
 
   return (
     <Shell>
@@ -117,21 +116,63 @@ export default function Dashboard() {
           </Card>
         ) : (
           <>
+            {/* SAVINGS FLOW - Uang Diamankan Memotong dari Pemasukan */}
+            <Card className="border-accent/30 bg-accent/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-mono font-medium text-accent">
+                  💰 Alur Uang Anda Bulan Ini
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {/* Pemasukan */}
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                    <span className="text-2xl">📥</span>
+                    <div className="flex-1">
+                      <p className="text-xs font-mono text-muted-foreground">PEMASUKAN KOTOR</p>
+                      <p className="text-lg font-bold font-mono text-accent">
+                        Rp {analysis.totalIncome.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dikurangi Tabungan */}
+                  {(analysis.savedAmount ?? 0) > 0 && (
+                    <>
+                      <div className="flex justify-center">
+                        <ArrowRight className="rotate-90 text-muted-foreground/50" />
+                      </div>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                        <span className="text-2xl">🔒</span>
+                        <div className="flex-1">
+                          <p className="text-xs font-mono text-muted-foreground">DIAMANKAN UNTUK TABUNGAN</p>
+                          <p className="text-lg font-bold font-mono text-green-500">
+                            - Rp {(analysis.savedAmount ?? 0).toLocaleString("id-ID")}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Sisa untuk Belanja */}
+                  <div className="flex justify-center">
+                    <ArrowRight className="rotate-90 text-muted-foreground/50" />
+                  </div>
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <span className="text-2xl">💸</span>
+                    <div className="flex-1">
+                      <p className="text-xs font-mono text-muted-foreground">TERSEDIA UNTUK BELANJA</p>
+                      <p className="text-lg font-bold font-mono text-blue-500">
+                        Rp {availableBalance.toLocaleString("id-ID")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Summary Row - Income & Expense */}
             <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-              <Card className="glass border-border/50 shadow-lg">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
-                    Total Pemasukan Bulan Ini
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl md:text-3xl font-bold font-mono text-accent">
-                    Rp {analysis.totalIncome.toLocaleString("id-ID")}
-                  </p>
-                </CardContent>
-              </Card>
-
               <Card className="glass border-border/50 shadow-lg">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
@@ -141,6 +182,31 @@ export default function Dashboard() {
                 <CardContent>
                   <p className="text-2xl md:text-3xl font-bold font-mono text-destructive">
                     Rp {analysis.totalExpense.toLocaleString("id-ID")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    dari Rp {availableBalance.toLocaleString("id-ID")} yang tersedia
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="glass border-border/50 shadow-lg">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                    Sisa Uang untuk Belanja
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className={`text-2xl md:text-3xl font-bold font-mono ${
+                    (availableBalance - analysis.totalExpense) >= 0
+                      ? "text-accent"
+                      : "text-destructive"
+                  }`}>
+                    Rp {(availableBalance - analysis.totalExpense).toLocaleString("id-ID")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {(availableBalance - analysis.totalExpense) >= 0 
+                      ? "Belanja Anda di bawah budget" 
+                      : "Belanja Anda melebihi budget"}
                   </p>
                 </CardContent>
               </Card>
@@ -169,31 +235,6 @@ export default function Dashboard() {
                 type="savings"
                 amount={analysis.savedAmount ?? 0}
               />
-            </div>
-
-            {/* Savings Management Card */}
-            <div className="mt-4">
-              <Card className="glass border-border/50 shadow-lg hover:shadow-xl transition-shadow">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xs font-mono font-medium uppercase tracking-wider text-muted-foreground">
-                    Tentang Uang yang Diamankan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Uang yang diamankan adalah uang yang Anda pisahkan dari pemasukan.
-                    Uang ini tidak dihitung sebagai pengeluaran dan tidak boleh dipakai untuk belanja.
-                    <br /><br />
-                    Untuk mengamankan uang, tambahkan transaksi pemasukan di menu <strong>Transaksi</strong>,
-                    lalu tentukan berapa yang ingin diamankan.
-                  </p>
-                  <div className="mt-3">
-                    <a href="/transactions">
-                      <Button variant="secondary">Buka Transaksi</Button>
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Net Cashflow & Score */}
