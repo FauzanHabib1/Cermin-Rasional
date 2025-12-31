@@ -76,7 +76,7 @@ export default function Transactions() {
   const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactions();
   const { toast } = useToast();
   const [filter, setFilter] = useState<
-    "all" | "income" | "expense" | "savings"
+    "all" | "income" | "expense"
   >("all");
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -168,7 +168,6 @@ export default function Transactions() {
 
   const filteredTransactions = transactions.filter((t) => {
     if (filter === "all") return true;
-    if (filter === "savings") return t.isAllocation === true;
     return t.type === filter;
   });
 
@@ -403,6 +402,15 @@ export default function Transactions() {
                     className="text-xs"
                   >
                     Keluar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {}}
+                    disabled
+                    className="text-xs"
+                  >
+                    Diamankan
                   </Button>
                 </div>
               </div>

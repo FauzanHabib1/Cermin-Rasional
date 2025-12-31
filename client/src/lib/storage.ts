@@ -84,7 +84,7 @@ export const storage = {
       if ((existing.isAllocation || updated.isAllocation) && (typeof updated.amount === 'number')) {
         const parentId = existing.parentIncomeId || updated.parentIncomeId;
         if (parentId) {
-          const parent = transactions.find(t => t.id === parentId && t.type === 'income');
+          const parent = transactions.find(t => t.id === parentId?.toString() && t.type === 'income');
           if (!parent) throw new Error('Parent income tidak ditemukan untuk alokasi ini.');
           // sum other allocations
           const otherAllocSum = transactions.filter(t => t.parentIncomeId?.toString() === parentId?.toString() && t.id !== id).reduce((s, t) => s + t.amount, 0);
