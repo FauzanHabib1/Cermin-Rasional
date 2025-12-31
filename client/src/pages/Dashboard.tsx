@@ -6,17 +6,18 @@ import {
   analyzeFinances,
   calculateConsistencyScore,
 } from "@/lib/finance-engine";
-import { generatePlainReport } from "@/lib/finance-engine";
 import { generateAuditReport } from "@/lib/pdf-generator";
 import { useTransactions } from "@/hooks/useTransactions";
 import { Button } from "@/components/ui/button";
-import { Download, TrendingUp, ArrowRight } from "lucide-react";
+import { Download, TrendingUp, ArrowRight, FileJson } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { useMemo } from "react";
 
 export default function Dashboard() {
   const { transactions } = useTransactions();
   const { toast } = useToast();
+  const [_, setLocation] = useLocation();
 
   const analysis = useMemo(() => analyzeFinances(transactions), [transactions]);
   const score = useMemo(
@@ -49,22 +50,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleShowPlainReport = () => {
-    const report = generatePlainReport(transactions);
-    const w = window.open("", "_blank", "noopener");
-    if (w) {
-      w.document.write(
-        '<pre style="white-space:pre-wrap;font-family:monospace;padding:16px;">' +
-          report.replace(/</g, "&lt;") +
-          "</pre>"
-      );
-      w.document.title = "Laporan Keuangan Sederhana";
-    } else {
-      navigator.clipboard?.writeText(report);
-      alert(
-        "Laporan disalin ke clipboard. Buka halaman Transaksi untuk meninjau jika perlu."
-      );
+  const handleViewJsonReport = () => {
+    if (transactions.length === 0) {
+      toast({
+        title: "Data Kosong",
+        description: "Tambahkan transaksi terlebih dahulu.",
+        variant: "destructive",
+      });
+      return;
     }
+    setLocation("/reports");
   };
 
   const hasData = transactions.length > 0;
@@ -85,23 +80,26 @@ export default function Dashboard() {
                 : "Belum ada data transaksi"}
             </p>
           </div>
-          <Button
-            variant="secondary"
-            onClick={handleExportPDF}
-            disabled={!hasData}
-            className="w-full md:w-auto"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Audit Report
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={handleShowPlainReport}
-            disabled={!hasData}
-            className="ml-2 hidden md:inline-flex"
-          >
-            Laporan Sederhana
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleExportPDF}
+              disabled={!hasData}
+              className="w-full sm:w-auto"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Audit Report
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleViewJsonReport}
+              disabled={!hasData}
+              className="w-full sm:w-auto"
+            >
+              <FileJson className="mr-2 h-4 w-4" />
+              Laporan JSON
+            </Button>
+          </div>
         </div>
 
         {!hasData ? (

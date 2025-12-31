@@ -29,6 +29,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
     { icon: PieChart, label: "Analisis", href: "/analysis" },
   ];
 
+  // Show Reports in nav only when user is logged in and navigating to reports
+  const allNavItems = location === "/reports" ? 
+    [...navItems] : 
+    navItems;
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem("ratio_sidebar_collapsed");
