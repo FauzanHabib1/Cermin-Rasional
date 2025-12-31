@@ -2,6 +2,7 @@ import { Shell } from "@/components/layout/Shell";
 import { RatioCard } from "@/components/dashboard/RatioCard";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
 import { AIAnalysis } from "@/components/dashboard/AIAnalysis";
+import { Ornament3D } from "@/components/dashboard/Ornament3D";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   analyzeFinances,
@@ -65,10 +66,16 @@ export default function Dashboard() {
 
   const hasData = transactions.length > 0;
   const availableBalance = analysis.totalIncome - (analysis.savedAmount ?? 0);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   return (
     <Shell>
-      <div className="space-y-6">
+      {/* 3D Background Ornament */}
+      <div className="absolute inset-0 h-96 z-0 pointer-events-none overflow-hidden rounded-3xl">
+        <Ornament3D isMobile={isMobile} />
+      </div>
+
+      <div className="space-y-6 relative z-10">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex-1">
