@@ -142,9 +142,9 @@ export default function Transactions() {
         id: Math.random().toString(36).substr(2, 9),
         date: new Date(values.date).toISOString(),
         amount: allocation,
-        type: "income", // Keep as income type
-        category: "need", // Dummy category, not used for allocations
-        description: `Uang Diamankan: ${values.description}`,
+        type: "expense",
+        category: "savings",
+        description: `Alokasi Tabungan: ${values.description}`,
         parentIncomeId: newTransaction.id as any,
         isAllocation: true,
       };
