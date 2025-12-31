@@ -139,7 +139,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         className={cn(
           "border-r border-border/50 glass-strong hidden flex-col transition-all duration-200 md:flex shadow-xl",
           (collapsed && !hoverExpanded) ? "w-16" : "w-64",
-          "fixed top-0 left-0 h-full z-20"
+          "shrink-0"
         )}
       >
         {/* Header */}
@@ -234,8 +234,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto transition-all duration-200 mt-14 md:mt-0">
-        <div className="flex justify-center w-full">
+      <main className="flex-1 overflow-auto transition-all duration-200 mt-14 md:mt-0 md:ml-0">
+        <div className="flex justify-center w-full h-full">
           <div className="w-full max-w-6xl space-y-6 p-4 sm:p-6 md:p-8">
             {children}
           </div>
