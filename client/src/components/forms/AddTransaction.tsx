@@ -98,9 +98,6 @@ export function AddTransaction({ onAdd }: AddTransactionProps) {
       description: values.description,
     };
     // If income and user specified a savings allocation, create a separate savings transaction
-    const allocation = values.savingsAllocation
-      ? Number(values.savingsAllocation)
-      : 0;
     onAdd(newTransaction);
 
     if (newTransaction.type === "income" && allocation > 0) {
@@ -111,7 +108,7 @@ export function AddTransaction({ onAdd }: AddTransactionProps) {
         type: "expense",
         category: "savings",
         description: `Alokasi Tabungan: ${newTransaction.description}`,
-        parentIncomeId: newTransaction.id,
+        parentIncomeId: newTransaction.id as any,
         isAllocation: true,
       };
 

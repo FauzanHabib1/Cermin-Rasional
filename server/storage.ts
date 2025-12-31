@@ -2,7 +2,7 @@ import {
   type User, type InsertUser,
   type Transaction, type InsertTransaction,
   type UserSettings, type InsertUserSettings
-} from "@shared/schema";
+} from "../shared/schema";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -13,6 +13,7 @@ export interface IStorage {
   getTransactions(userId: number): Promise<Transaction[]>;
   getTransaction(id: number): Promise<Transaction | undefined>;
   createTransaction(userId: number, transaction: InsertTransaction): Promise<Transaction>;
+  updateTransaction(id: number, updates: Partial<Transaction>): Promise<Transaction>;
   deleteTransaction(id: number): Promise<void>;
   
   // Allocations
@@ -116,6 +117,24 @@ export class MemStorage implements IStorage {
     };
     this.transactions.set(id, newTransaction);
     return newTransaction;
+  }
+
+  async updateTransaction(id: number, updates: Partial<Transaction>): Promise<Transaction> {
+    const transaction = this.transactions.get(id);
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    
+    const updated: Transaction = {
+      ...transaction,
+      ...updates,
+      id: transaction.id, // Ensure ID doesn't change
+      userId: transaction.userId, // Ensure userId doesn't change
+      updatedAt: new Date(),
+    };
+    
+    this.transactions.set(id, updated);
+    return updated;
   }
 
   async deleteTransaction(id: number): Promise<void> {
