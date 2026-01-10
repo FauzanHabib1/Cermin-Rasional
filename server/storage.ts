@@ -4,6 +4,38 @@ import {
   type UserSettings, type InsertUserSettings
 } from "../shared/schema";
 
+export interface Budget {
+  id: number;
+  userId: number;
+  category: 'need' | 'want' | 'savings';
+  monthlyLimit: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InsertBudget {
+  category: 'need' | 'want' | 'savings';
+  monthlyLimit: string;
+}
+
+export interface SavingsGoal {
+  id: number;
+  userId: number;
+  name: string;
+  targetAmount: string;
+  currentAmount: string;
+  deadline: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InsertSavingsGoal {
+  name: string;
+  targetAmount: string;
+  currentAmount?: string;
+  deadline?: Date | null;
+}
+
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -23,23 +55,46 @@ export interface IStorage {
   // Settings
   getUserSettings(userId: number): Promise<UserSettings | undefined>;
   updateUserSettings(userId: number, settings: InsertUserSettings): Promise<UserSettings>;
+  
+  // Budgets
+  getBudgets(userId: number): Promise<Budget[]>;
+  getBudget(id: number): Promise<Budget | undefined>;
+  getBudgetByCategory(userId: number, category: 'need' | 'want' | 'savings'): Promise<Budget | undefined>;
+  createBudget(userId: number, budget: InsertBudget): Promise<Budget>;
+  updateBudget(id: number, updates: Partial<Budget>): Promise<Budget>;
+  deleteBudget(id: number): Promise<void>;
+  
+  // Savings Goals
+  getSavingsGoals(userId: number): Promise<SavingsGoal[]>;
+  getSavingsGoal(id: number): Promise<SavingsGoal | undefined>;
+  createSavingsGoal(userId: number, goal: InsertSavingsGoal): Promise<SavingsGoal>;
+  updateSavingsGoal(id: number, updates: Partial<SavingsGoal>): Promise<SavingsGoal>;
+  deleteSavingsGoal(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private transactions: Map<number, Transaction>;
   private settings: Map<number, UserSettings>;
+  private budgets: Map<number, Budget>;
+  private savingsGoals: Map<number, SavingsGoal>;
   private currentUserId: number;
   private currentTransactionId: number;
   private currentSettingsId: number;
+  private currentBudgetId: number;
+  private currentSavingsGoalId: number;
 
   constructor() {
     this.users = new Map();
     this.transactions = new Map();
     this.settings = new Map();
+    this.budgets = new Map();
+    this.savingsGoals = new Map();
     this.currentUserId = 1;
     this.currentTransactionId = 1;
     this.currentSettingsId = 1;
+    this.currentBudgetId = 1;
+    this.currentSavingsGoalId = 1;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -198,6 +253,112 @@ export class MemStorage implements IStorage {
     };
     this.settings.set(id, newSettings);
     return newSettings;
+  }
+  
+  // Budget methods
+  async getBudgets(userId: number): Promise<Budget[]> {
+    return Array.from(this.budgets.values()).filter(
+      (b) => b.userId === userId
+    );
+  }
+  
+  async getBudget(id: number): Promise<Budget | undefined> {
+    return this.budgets.get(id);
+  }
+  
+  async getBudgetByCategory(userId: number, category: 'need' | 'want' | 'savings'): Promise<Budget | undefined> {
+    return Array.from(this.budgets.values()).find(
+      (b) => b.userId === userId && b.category === category
+    );
+  }
+  
+  async createBudget(userId: number, budget: InsertBudget): Promise<Budget> {
+    // Check if budget for this category already exists
+    const existing = await this.getBudgetByCategory(userId, budget.category);
+    if (existing) {
+      throw new Error(`Budget for category ${budget.category} already exists`);
+    }
+    
+    const id = this.currentBudgetId++;
+    const newBudget: Budget = {
+      ...budget,
+      id,
+      userId,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.budgets.set(id, newBudget);
+    return newBudget;
+  }
+  
+  async updateBudget(id: number, updates: Partial<Budget>): Promise<Budget> {
+    const budget = this.budgets.get(id);
+    if (!budget) {
+      throw new Error("Budget not found");
+    }
+    
+    const updated: Budget = {
+      ...budget,
+      ...updates,
+      id: budget.id,
+      userId: budget.userId,
+      updatedAt: new Date(),
+    };
+    
+    this.budgets.set(id, updated);
+    return updated;
+  }
+  
+  async deleteBudget(id: number): Promise<void> {
+    this.budgets.delete(id);
+  }
+  
+  // Savings Goals methods
+  async getSavingsGoals(userId: number): Promise<SavingsGoal[]> {
+    return Array.from(this.savingsGoals.values()).filter(
+      (g) => g.userId === userId
+    );
+  }
+  
+  async getSavingsGoal(id: number): Promise<SavingsGoal | undefined> {
+    return this.savingsGoals.get(id);
+  }
+  
+  async createSavingsGoal(userId: number, goal: InsertSavingsGoal): Promise<SavingsGoal> {
+    const id = this.currentSavingsGoalId++;
+    const newGoal: SavingsGoal = {
+      ...goal,
+      id,
+      userId,
+      currentAmount: goal.currentAmount || '0',
+      deadline: goal.deadline || null,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.savingsGoals.set(id, newGoal);
+    return newGoal;
+  }
+  
+  async updateSavingsGoal(id: number, updates: Partial<SavingsGoal>): Promise<SavingsGoal> {
+    const goal = this.savingsGoals.get(id);
+    if (!goal) {
+      throw new Error("Savings goal not found");
+    }
+    
+    const updated: SavingsGoal = {
+      ...goal,
+      ...updates,
+      id: goal.id,
+      userId: goal.userId,
+      updatedAt: new Date(),
+    };
+    
+    this.savingsGoals.set(id, updated);
+    return updated;
+  }
+  
+  async deleteSavingsGoal(id: number): Promise<void> {
+    this.savingsGoals.delete(id);
   }
 }
 

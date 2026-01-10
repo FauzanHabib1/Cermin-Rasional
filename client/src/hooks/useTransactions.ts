@@ -66,7 +66,8 @@ export function useTransactions() {
   const addTransaction = (transaction: Transaction) => {
     // Remove id from transaction before sending to API
     const { id, ...transactionData } = transaction;
-    addMutation.mutate(transactionData as any);
+    console.log('Sending transaction to API:', transactionData); // Debug log
+    addMutation.mutate(transactionData);
   };
 
   const deleteTransaction = (id: string) => {

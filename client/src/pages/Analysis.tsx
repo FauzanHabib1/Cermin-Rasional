@@ -1,7 +1,11 @@
 import { Shell } from "@/components/layout/Shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useState } from "react";
+import { Sparkles, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Transaction {
   id: number;
@@ -19,6 +23,10 @@ const COLORS = {
 };
 
 export default function Analysis() {
+  const { toast } = useToast();
+  const [aiAnalysis, setAiAnalysis] = useState<string>("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
     queryKey: ["transactions"],
     queryFn: async () => {
@@ -68,6 +76,117 @@ export default function Analysis() {
   const trendData = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
   const hasData = transactions.length > 0;
+  
+  // Advanced Statistics Calculations
+  const currentMonth = new Date();
+  const lastMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1);
+  
+  const currentMonthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
+  const lastMonthKey = `${lastMonth.getFullYear()}-${String(lastMonth.getMonth() + 1).padStart(2, '0')}`;
+  
+  const currentMonthData = monthlyData[currentMonthKey] || { income: 0, expense: 0 };
+  const lastMonthData = monthlyData[lastMonthKey] || { income: 0, expense: 0 };
+  
+  // Month-to-month comparison
+  const incomeChange = lastMonthData.income > 0 
+    ? ((currentMonthData.income - lastMonthData.income) / lastMonthData.income) * 100 
+    : 0;
+  const expenseChange = lastMonthData.expense > 0
+    ? ((currentMonthData.expense - lastMonthData.expense) / lastMonthData.expense) * 100
+    : 0;
+  
+  // Category averages (last 3 months)
+  const last3Months = trendData.slice(-3);
+  const avgIncome = last3Months.reduce((sum, m) => sum + m.income, 0) / (last3Months.length || 1);
+  const avgExpense = last3Months.reduce((sum, m) => sum + m.expense, 0) / (last3Months.length || 1);
+  
+  // Category-specific averages
+  const categoryAverages = transactions
+    .filter(t => {
+      const txDate = new Date(t.date);
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      return t.type === 'expense' && txDate >= threeMonthsAgo;
+    })
+    .reduce((acc, t) => {
+      if (!acc[t.category]) acc[t.category] = [];
+      acc[t.category].push(parseFloat(t.amount));
+      return acc;
+    }, {} as Record<string, number[]>);
+  
+  const avgByCategory = Object.entries(categoryAverages).reduce((acc, [cat, amounts]) => {
+    acc[cat] = amounts.reduce((sum, a) => sum + a, 0) / amounts.length;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  // Trend indicator helper
+  const getTrendIcon = (change: number) => {
+    if (change > 5) return <TrendingUp className="h-4 w-4 text-green-500" />;
+    if (change < -5) return <TrendingDown className="h-4 w-4 text-red-500" />;
+    return <Minus className="h-4 w-4 text-muted-foreground" />;
+  };
+  
+  const getTrendColor = (change: number, inverse = false) => {
+    const isPositive = inverse ? change < 0 : change > 0;
+    if (Math.abs(change) < 5) return "text-muted-foreground";
+    return isPositive ? "text-green-500" : "text-red-500";
+  };
+
+  const handleAIAnalysis = async () => {
+    setIsAnalyzing(true);
+    setAiAnalysis("");
+    
+    try {
+      const response = await fetch('/api/analyze-finances', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to start analysis');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = JSON.parse(line.slice(6));
+            if (data.content) {
+              setAiAnalysis(prev => prev + data.content);
+            }
+            if (data.done) {
+              setIsAnalyzing(false);
+            }
+            if (data.error) {
+              throw new Error(data.error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('AI Analysis error:', error);
+      toast({
+        title: 'Gagal menganalisis',
+        description: 'Terjadi kesalahan saat menganalisis data keuangan Anda',
+        variant: 'destructive',
+      });
+      setIsAnalyzing(false);
+    }
+  };
 
   return (
     <Shell>
@@ -122,6 +241,113 @@ export default function Analysis() {
               </CardContent>
             </Card>
 
+            {/* Statistics Insights */}
+            <div className="grid gap-4 md:grid-cols-3">
+              {/* Income Comparison */}
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                    Pemasukan Bulan Ini
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono text-green-500">
+                    Rp {currentMonthData.income.toLocaleString('id-ID')}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    {getTrendIcon(incomeChange)}
+                    <span className={`text-sm font-medium ${getTrendColor(incomeChange)}`}>
+                      {incomeChange > 0 ? '+' : ''}{incomeChange.toFixed(1)}%
+                    </span>
+                    <span className="text-xs text-muted-foreground">vs bulan lalu</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Rata-rata 3 bulan: Rp {avgIncome.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Expense Comparison */}
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                    Pengeluaran Bulan Ini
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono text-red-500">
+                    Rp {currentMonthData.expense.toLocaleString('id-ID')}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    {getTrendIcon(expenseChange)}
+                    <span className={`text-sm font-medium ${getTrendColor(expenseChange, true)}`}>
+                      {expenseChange > 0 ? '+' : ''}{expenseChange.toFixed(1)}%
+                    </span>
+                    <span className="text-xs text-muted-foreground">vs bulan lalu</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Rata-rata 3 bulan: Rp {avgExpense.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Savings Rate */}
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                    Tingkat Tabungan
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono text-blue-500">
+                    {currentMonthData.income > 0 
+                      ? ((currentMonthData.income - currentMonthData.expense) / currentMonthData.income * 100).toFixed(1)
+                      : '0.0'
+                    }%
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {currentMonthData.income > currentMonthData.expense 
+                      ? '✅ Surplus: Rp ' + (currentMonthData.income - currentMonthData.expense).toLocaleString('id-ID')
+                      : '⚠️ Defisit: Rp ' + (currentMonthData.expense - currentMonthData.income).toLocaleString('id-ID')
+                    }
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Target ideal: 20%
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Category Averages */}
+            {Object.keys(avgByCategory).length > 0 && (
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle>Rata-rata Pengeluaran per Kategori (3 Bulan Terakhir)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    {Object.entries(avgByCategory).map(([category, avg]) => (
+                      <div key={category} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {category === 'need' ? 'Kebutuhan' : category === 'want' ? 'Keinginan' : 'Tabungan'}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Per transaksi
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold font-mono" style={{ color: COLORS[category as keyof typeof COLORS] }}>
+                            Rp {avg.toLocaleString('id-ID', { maximumFractionDigits: 0 })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Monthly Trend */}
             <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
               <CardHeader>
@@ -139,6 +365,50 @@ export default function Analysis() {
                     <Bar dataKey="expense" fill="#ef4444" name="Pengeluaran" />
                   </BarChart>
                 </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* AI Analysis Section */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-yellow-500" />
+                    Analisis AI
+                  </CardTitle>
+                  <Button 
+                    onClick={handleAIAnalysis}
+                    disabled={isAnalyzing || !hasData}
+                    size="sm"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Menganalisis...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Analisis dengan AI
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {aiAnalysis ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <div className="whitespace-pre-wrap">{aiAnalysis}</div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Sparkles className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">
+                      Klik tombol "Analisis dengan AI" untuk mendapatkan insight dan rekomendasi
+                      dari ChatGPT berdasarkan data keuangan Anda
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

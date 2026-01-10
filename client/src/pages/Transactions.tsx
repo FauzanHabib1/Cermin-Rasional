@@ -41,7 +41,7 @@ import { Transaction } from "@/lib/types";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Search, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import UI_COPY from "@/lib/ui-copy";
 import { useEffect } from "react";
@@ -78,6 +78,11 @@ export default function Transactions() {
   const [filter, setFilter] = useState<
     "all" | "income" | "expense"
   >("all");
+  
+  // Advanced filters
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "need" | "want" | "savings">("all");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -145,9 +150,9 @@ export default function Transactions() {
         type: "expense",
         category: "savings",
         description: `Alokasi Tabungan: ${values.description}`,
-        parentIncomeId: newTransaction.id as any,
         isAllocation: true,
       };
+      console.log('Creating allocation transaction:', allocationTx); // Debug
       addTransaction(allocationTx);
     }
     toast({
@@ -167,9 +172,43 @@ export default function Transactions() {
   }
 
   const filteredTransactions = transactions.filter((t) => {
-    if (filter === "all") return true;
-    return t.type === filter;
+    // Type filter
+    if (filter !== "all" && t.type !== filter) return false;
+    
+    // Search filter
+    if (searchQuery && !t.description.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    
+    // Category filter
+    if (categoryFilter !== "all" && t.category !== categoryFilter) {
+      return false;
+    }
+    
+    // Date range filter
+    if (dateRange.start) {
+      const txDate = new Date(t.date);
+      const startDate = new Date(dateRange.start);
+      if (txDate < startDate) return false;
+    }
+    if (dateRange.end) {
+      const txDate = new Date(t.date);
+      const endDate = new Date(dateRange.end);
+      endDate.setHours(23, 59, 59, 999); // Include full end date
+      if (txDate > endDate) return false;
+    }
+    
+    return true;
   });
+  
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setDateRange({ start: "", end: "" });
+    setFilter("all");
+  };
+  
+  const hasActiveFilters = searchQuery || categoryFilter !== "all" || dateRange.start || dateRange.end || filter !== "all";
 
   const handleDelete = (id: string, desc: string) => {
     // If deleting an income with allocations, warn first
@@ -374,45 +413,94 @@ export default function Transactions() {
           {/* Transactions List - Right Column on Desktop, Full Width Below on Mobile */}
           <Card className="border-border/50 bg-card/50 lg:col-span-2 flex flex-col">
             <CardHeader className="pb-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
-                  Riwayat ({filteredTransactions.length})
-                </CardTitle>
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    size="sm"
-                    variant={filter === "all" ? "default" : "outline"}
-                    onClick={() => setFilter("all")}
-                    className="text-xs"
-                  >
-                    Semua
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filter === "income" ? "default" : "outline"}
-                    onClick={() => setFilter("income")}
-                    className="text-xs"
-                  >
-                    Masuk
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={filter === "expense" ? "default" : "outline"}
-                    onClick={() => setFilter("expense")}
-                    className="text-xs"
-                  >
-                    Keluar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {}}
-                    disabled
-                    className="text-xs"
-                  >
-                    Diamankan
-                  </Button>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <CardTitle className="text-sm font-mono font-medium uppercase tracking-wider text-muted-foreground">
+                    Riwayat ({filteredTransactions.length})
+                  </CardTitle>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      size="sm"
+                      variant={filter === "all" ? "default" : "outline"}
+                      onClick={() => setFilter("all")}
+                      className="text-xs"
+                    >
+                      Semua
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={filter === "income" ? "default" : "outline"}
+                      onClick={() => setFilter("income")}
+                      className="text-xs"
+                    >
+                      Masuk
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={filter === "expense" ? "default" : "outline"}
+                      onClick={() => setFilter("expense")}
+                      className="text-xs"
+                    >
+                      Keluar
+                    </Button>
+                  </div>
                 </div>
+                
+                {/* Advanced Filters */}
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Cari transaksi..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 text-xs h-8"
+                    />
+                  </div>
+                  
+                  {/* Category Filter */}
+                  <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as any)}>
+                    <SelectTrigger className="text-xs h-8">
+                      <SelectValue placeholder="Kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Semua Kategori</SelectItem>
+                      <SelectItem value="need">Kebutuhan</SelectItem>
+                      <SelectItem value="want">Keinginan</SelectItem>
+                      <SelectItem value="savings">Tabungan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Date Range */}
+                  <Input
+                    type="date"
+                    placeholder="Dari tanggal"
+                    value={dateRange.start}
+                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                    className="text-xs h-8"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Sampai tanggal"
+                    value={dateRange.end}
+                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                    className="text-xs h-8"
+                  />
+                </div>
+                
+                {/* Clear Filters Button */}
+                {hasActiveFilters && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={clearFilters}
+                    className="text-xs w-fit"
+                  >
+                    <X className="mr-1 h-3 w-3" />
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-x-auto p-0">

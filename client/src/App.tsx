@@ -9,7 +9,6 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
 import Analysis from "@/pages/Analysis";
-import Reports from "@/pages/Reports";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 
@@ -46,9 +45,6 @@ function Router() {
       </Route>
       <Route path="/analysis">
         {() => <ProtectedRoute component={Analysis} />}
-      </Route>
-      <Route path="/reports">
-        {() => <ProtectedRoute component={Reports} />}
       </Route>
       <Route component={NotFound} />
     </Switch>

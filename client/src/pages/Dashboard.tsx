@@ -5,11 +5,17 @@ import { RatioCard } from "@/components/dashboard/RatioCard";
 import { ScoreCard } from "@/components/dashboard/ScoreCard";
 import { TransactionTable } from "@/components/dashboard/TransactionTable";
 import { FileText, Download, TrendingUp } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BudgetCard } from "@/components/budget/BudgetCard";
+import { SavingsGoals } from "@/components/savings/SavingsGoals";
 
 interface SummaryData {
   totalIncome: number;
+  allocatedSavings: number;
+  availableForExpenses: number;
+  totalRegularExpenses: number;
   totalExpense: number;
+  netBalance: number;
   netSavings: number;
   needRatio: number;
   wantRatio: number;
@@ -32,6 +38,15 @@ interface Transaction {
   isAllocation?: boolean;
 }
 
+interface Budget {
+  id: number;
+  userId: number;
+  category: 'need' | 'want' | 'savings';
+  monthlyLimit: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export default function Dashboard() {
   const { data: summary, isLoading: summaryLoading } = useQuery<SummaryData>({
     queryKey: ["summary"],
@@ -48,6 +63,53 @@ export default function Dashboard() {
       const res = await fetch("/api/transactions");
       if (!res.ok) throw new Error("Failed to fetch transactions");
       return res.json();
+    },
+  });
+
+  const { data: budgets = [], isLoading: budgetsLoading } = useQuery<Budget[]>({
+    queryKey: ["budgets"],
+    queryFn: async () => {
+      const res = await fetch("/api/budgets");
+      if (!res.ok) throw new Error("Failed to fetch budgets");
+      return res.json();
+    },
+  });
+  
+  const queryClient = useQueryClient();
+  
+  const createBudgetMutation = useMutation({
+    mutationFn: async ({ category, monthlyLimit }: { category: string; monthlyLimit: number }) => {
+      const res = await fetch('/api/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, monthlyLimit: monthlyLimit.toString() }),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to create budget');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+    },
+  });
+  
+  const updateBudgetMutation = useMutation({
+    mutationFn: async ({ id, monthlyLimit }: { id: number; monthlyLimit: number }) => {
+      const res = await fetch(`/api/budgets/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ monthlyLimit: monthlyLimit.toString() }),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to update budget');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
     },
   });
 
@@ -68,6 +130,42 @@ export default function Dashboard() {
       linkElement.click();
     }
   };
+  
+  const handleExportExcel = () => {
+    window.open('/api/export/excel', '_blank');
+  };
+  
+  const handleExportCSV = () => {
+    window.open('/api/export/csv', '_blank');
+  };
+  
+  const handleCreateBudget = async (category: string, limit: number) => {
+    await createBudgetMutation.mutateAsync({ category, monthlyLimit: limit });
+  };
+  
+  const handleUpdateBudget = async (category: string, limit: number) => {
+    const budget = budgets.find(b => b.category === category);
+    if (budget) {
+      await updateBudgetMutation.mutateAsync({ id: budget.id, monthlyLimit: limit });
+    }
+  };
+  
+  // Calculate current month spending by category
+  const currentMonth = new Date();
+  const currentMonthKey = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}`;
+  
+  const currentMonthSpending = transactions
+    .filter(t => {
+      const txDate = new Date(t.date);
+      const txMonthKey = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      return t.type === 'expense' && txMonthKey === currentMonthKey && !t.isAllocation;
+    })
+    .reduce((acc, t) => {
+      const category = t.category;
+      if (!acc[category]) acc[category] = 0;
+      acc[category] += Number(t.amount);
+      return acc;
+    }, {} as Record<string, number>);
 
   const isLoading = summaryLoading || transactionsLoading;
   const hasData = transactions.length > 0;
@@ -85,15 +183,24 @@ export default function Dashboard() {
               Analisis rasional perilaku finansial Anda
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportPDF}
+              onClick={handleExportExcel}
               disabled={!hasData}
             >
-              <FileText className="w-4 h-4 mr-2" />
-              Audit Report
+              <Download className="w-4 h-4 mr-2" />
+              Export Excel
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={!hasData}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
             </Button>
             <Button
               variant="outline"
@@ -124,7 +231,7 @@ export default function Dashboard() {
         {!isLoading && hasData && summary && (
           <>
             {/* Financial Overview */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
@@ -141,26 +248,56 @@ export default function Dashboard() {
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
-                    Total Pengeluaran
+                    Alokasi Tabungan
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold font-mono text-red-500">
-                    Rp {summary.totalExpense.toLocaleString('id-ID')}
+                  <div className="text-2xl font-bold font-mono text-blue-500">
+                    Rp {summary.allocatedSavings.toLocaleString('id-ID')}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Diamankan</p>
                 </CardContent>
               </Card>
 
               <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
-                    Sisa / Tabungan
+                    Tersedia Belanja
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold font-mono ${summary.netSavings >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    Rp {summary.netSavings.toLocaleString('id-ID')}
+                  <div className="text-2xl font-bold font-mono text-cyan-500">
+                    Rp {summary.availableForExpenses.toLocaleString('id-ID')}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">Sisa untuk digunakan</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                    Total Pengeluaran
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold font-mono text-red-500">
+                    Rp {summary.totalRegularExpenses.toLocaleString('id-ID')}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Belanja aktual</p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider font-mono">
+                    Sisa Saldo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl font-bold font-mono ${summary.netBalance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    Rp {summary.netBalance.toLocaleString('id-ID')}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Tersedia - Belanja</p>
                 </CardContent>
               </Card>
             </div>
@@ -192,6 +329,40 @@ export default function Dashboard() {
                 />
               </div>
             </div>
+
+            {/* Budget Section */}
+            <div>
+              <h2 className="text-xl font-display font-semibold mb-4">Budget Bulanan</h2>
+              <div className="grid gap-4 md:grid-cols-3">
+                <BudgetCard
+                  category="need"
+                  label="Kebutuhan"
+                  currentSpending={currentMonthSpending.need || 0}
+                  budget={budgets.find(b => b.category === 'need')}
+                  onCreate={handleCreateBudget}
+                  onUpdate={handleUpdateBudget}
+                />
+                <BudgetCard
+                  category="want"
+                  label="Keinginan"
+                  currentSpending={currentMonthSpending.want || 0}
+                  budget={budgets.find(b => b.category === 'want')}
+                  onCreate={handleCreateBudget}
+                  onUpdate={handleUpdateBudget}
+                />
+                <BudgetCard
+                  category="savings"
+                  label="Tabungan"
+                  currentSpending={currentMonthSpending.savings || 0}
+                  budget={budgets.find(b => b.category === 'savings')}
+                  onCreate={handleCreateBudget}
+                  onUpdate={handleUpdateBudget}
+                />
+              </div>
+            </div>
+
+            {/* Savings Goals Section */}
+            <SavingsGoals />
 
             {/* Recent Transactions */}
             <div>
