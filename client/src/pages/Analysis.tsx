@@ -3,9 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useState } from "react";
-import { Sparkles, Loader2, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface Transaction {
   id: number;
@@ -23,9 +21,6 @@ const COLORS = {
 };
 
 export default function Analysis() {
-  const { toast } = useToast();
-  const [aiAnalysis, setAiAnalysis] = useState<string>("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
     queryKey: ["transactions"],
@@ -132,61 +127,7 @@ export default function Analysis() {
     return isPositive ? "text-green-500" : "text-red-500";
   };
 
-  const handleAIAnalysis = async () => {
-    setIsAnalyzing(true);
-    setAiAnalysis("");
-    
-    try {
-      const response = await fetch('/api/analyze-finances', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
 
-      if (!response.ok) {
-        throw new Error('Failed to start analysis');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-
-      if (!reader) {
-        throw new Error('No response body');
-      }
-
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
-            if (data.content) {
-              setAiAnalysis(prev => prev + data.content);
-            }
-            if (data.done) {
-              setIsAnalyzing(false);
-            }
-            if (data.error) {
-              throw new Error(data.error);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('AI Analysis error:', error);
-      toast({
-        title: 'Gagal menganalisis',
-        description: 'Terjadi kesalahan saat menganalisis data keuangan Anda',
-        variant: 'destructive',
-      });
-      setIsAnalyzing(false);
-    }
-  };
 
   return (
     <Shell>
@@ -368,49 +309,7 @@ export default function Analysis() {
               </CardContent>
             </Card>
 
-            {/* AI Analysis Section */}
-            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-yellow-500" />
-                    Analisis AI
-                  </CardTitle>
-                  <Button 
-                    onClick={handleAIAnalysis}
-                    disabled={isAnalyzing || !hasData}
-                    size="sm"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Menganalisis...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Analisis dengan AI
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {aiAnalysis ? (
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <div className="whitespace-pre-wrap">{aiAnalysis}</div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Sparkles className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p className="text-sm">
-                      Klik tombol "Analisis dengan AI" untuk mendapatkan insight dan rekomendasi
-                      dari ChatGPT berdasarkan data keuangan Anda
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+
 
             {/* Category Details */}
             <div className="grid gap-4 md:grid-cols-3">

@@ -43,7 +43,6 @@ import { id } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Trash2, Plus, Search, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import UI_COPY from "@/lib/ui-copy";
 import { useEffect } from "react";
 import { RupiahInput } from "@/components/ui/rupiah-input";
 
@@ -82,7 +81,6 @@ export default function Transactions() {
   // Advanced filters
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<"all" | "need" | "want" | "savings">("all");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -185,30 +183,16 @@ export default function Transactions() {
       return false;
     }
     
-    // Date range filter
-    if (dateRange.start) {
-      const txDate = new Date(t.date);
-      const startDate = new Date(dateRange.start);
-      if (txDate < startDate) return false;
-    }
-    if (dateRange.end) {
-      const txDate = new Date(t.date);
-      const endDate = new Date(dateRange.end);
-      endDate.setHours(23, 59, 59, 999); // Include full end date
-      if (txDate > endDate) return false;
-    }
-    
     return true;
   });
   
   const clearFilters = () => {
     setSearchQuery("");
     setCategoryFilter("all");
-    setDateRange({ start: "", end: "" });
     setFilter("all");
   };
   
-  const hasActiveFilters = searchQuery || categoryFilter !== "all" || dateRange.start || dateRange.end || filter !== "all";
+  const hasActiveFilters = searchQuery || categoryFilter !== "all" || filter !== "all";
 
   const handleDelete = (id: string, desc: string) => {
     // If deleting an income with allocations, warn first
@@ -447,7 +431,7 @@ export default function Transactions() {
                 </div>
                 
                 {/* Advanced Filters */}
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-2 sm:grid-cols-2">
                   {/* Search */}
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -471,22 +455,6 @@ export default function Transactions() {
                       <SelectItem value="savings">Tabungan</SelectItem>
                     </SelectContent>
                   </Select>
-                  
-                  {/* Date Range */}
-                  <Input
-                    type="date"
-                    placeholder="Dari tanggal"
-                    value={dateRange.start}
-                    onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                    className="text-xs h-8"
-                  />
-                  <Input
-                    type="date"
-                    placeholder="Sampai tanggal"
-                    value={dateRange.end}
-                    onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                    className="text-xs h-8"
-                  />
                 </div>
                 
                 {/* Clear Filters Button */}
